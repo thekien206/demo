@@ -133,17 +133,37 @@
 	$minutes_detail = $inputData["C_MINUTES_DETAIL"];
 
 	// 工事名
-	$x_1_id = "";
-	$x_1 = "";
-		if (is_array($inputExData["x_1"]) && (count($inputExData["x_1"]) > 0)) {
-			$x_1 = $inputExData["x_1"][0]["C_INPUT_CONTENT"];
-			$x_1_id = $inputExData["x_1"][0]["N_REPORT_DETAIL_ID"];
-		} else if ($comKind == CK_COM_MAKE) {
-			// 打合簿,履行報告で最後に発議した帳票の入力値を取得
-			$x_1 = getLatestGifuReportInputData($ora, $kaishaID, $genbaID, "1");
-			// 発議済み情報から取得できない場合は現場情報から取得
-			if ($x_1 == "")	$x_1 = $genbaInfo["genba_name"];
-		}
+    $x_1_id = "";
+    $x_1 = "";
+    if (is_array($inputExData["x_1"]) && (count($inputExData["x_1"]) > 0)) {
+        $x_1 = $inputExData["x_1"][0]["C_INPUT_CONTENT"];
+        $x_1_id = $inputExData["x_1"][0]["N_REPORT_DETAIL_ID"];
+    } else if ($comKind == CK_COM_MAKE) {
+        $input_list = array(
+            array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+            , "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_MINUTES
+            , "N_REPORT_INPUT_MASTER_ID" => MIYAZAKI_EIZEN_MSTRID_MINUTES_KOJIMEI
+            ),
+            array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+            , "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_MATERIAL
+            , "N_REPORT_INPUT_MASTER_ID" => MIYAZAKI_EIZEN_MSTRID_MATERIAL_KOJIMEI
+            ),
+            array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+            , "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_REPORT
+            , "N_REPORT_INPUT_MASTER_ID" => MIYAZAKI_EIZEN_MSTRID_REPORT_KOJIMEI
+            ),
+        );
+        // 最後に発議した帳票入力値より「工事名称」の入力値を取得する
+        if (getIwateReportInputContentsByInputMasters($ora, $input_list, $kaishaID, $genbaID, $latestInfo)) {
+            if (is_array($latestInfo) && count($latestInfo) > 0 && $latestInfo[0]["C_INPUT_CONTENT"] != "") {
+                $x_1 = $latestInfo[0]["C_INPUT_CONTENT"];
+            }
+        }
+        // 上記で未取得の場合、現場情報から取得
+        if ($x_1 == "") {
+            $x_1 = $genbaInfo["genba_name"];
+        }
+    }
 
 	// 宛先役割
 	$x_2_id = "";
@@ -215,6 +235,32 @@
 	if (is_array($inputExData["x_6"]) && (count($inputExData["x_6"]) > 0)) {
 		$x_6 = $inputExData["x_6"][0]["C_INPUT_CONTENT"];
 		$x_6_id = $inputExData["x_6"][0]["N_REPORT_DETAIL_ID"];
+	} else if ($comKind == CK_COM_MAKE) {
+		$input_list = array(
+			array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+			, "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_MINUTES
+			, "N_REPORT_INPUT_MASTER_ID" => FUKUSHIMA_EIZEN_MSTRID_MEET_ADDRESS
+			),
+			array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+			, "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_MATERIAL
+			, "N_REPORT_INPUT_MASTER_ID" => FUKUSHIMA_EIZEN_MSTRID_MEET_ADDRESS
+			),
+			array("N_REPORT_REGION_ID" => CRCL_REGID_MIYAZAKI_EIZEN
+			, "N_REPORT_MASTER_ID" => CRCL_MASID_MIYAZAKI_EIZEN_REPORT
+			, "N_REPORT_INPUT_MASTER_ID" => FUKUSHIMA_EIZEN_MSTRID_MEET_ADDRESS
+			),
+		);
+		// 最後に発議した帳票入力値より「工事名称」の入力値を取得する
+		if (getIwateReportInputContentsByInputMasters($ora, $input_list, $kaishaID, $genbaID, $latestInfo)) {
+			if (is_array($latestInfo) && count($latestInfo) > 0 && $latestInfo[0]["C_INPUT_CONTENT"] != "") {
+				$x_6 = $latestInfo[0]["C_INPUT_CONTENT"];
+			}
+		}
+		// 上記で未取得の場合、現場情報から取得
+		if ($x_6 == "") {
+			$x_6 = $_POST["basyo_gifu_" . $kaishaID . $genbaID];
+			if ($x_6 == "") $x_6 = $genbaInfo["genba_plc"];
+		}
 	}
 	
 //	if (!$lumpKakuninFlg) {
@@ -276,12 +322,21 @@
 //		if ($x_6 == "")	$x_6 = $genbaInfo["gend"];
 //	}
     // 宛先
+    // 宛先
 	$x_7 = "";
 	$x_7_id = "";
 	if (is_array($inputExData["x_7"]) && (count($inputExData["x_7"]) > 0)) {
 		$x_7 = $inputExData["x_7"][0]["C_INPUT_CONTENT"];
 		$x_7_id = $inputExData["x_7"][0]["N_REPORT_DETAIL_ID"];
-	}
+	} else if  ($comKind = CK_COM_MAKE) {
+		$chkType = $defRoutes[0]["N_PROPONENT_TYPE"];    //発議者の役割区分
+		for ($rCnt = 1; $rCnt < count($defRoutes); $rCnt++) {
+			if ($chkType != $defRoutes[$rCnt]["N_PROPONENT_TYPE"]) {
+				$x_7 = $defRoutes[$rCnt]["users"][0]["C_SHAIN_NAME"];
+				break;
+			}
+		}
+    }
 
 // 契約番号
 $x_8 = "";
@@ -297,59 +352,45 @@ $x_10_id = "";
 if (is_array($inputExData["x_10"]) && (count($inputExData["x_10"]) > 0)) {
 	$x_10 = $inputExData["x_10"][0]["C_INPUT_CONTENT"];
 	$x_10_id = $inputExData["x_10"][0]["N_REPORT_DETAIL_ID"];
-}
+} else if ($comKind == CK_COM_MAKE) {
+	$x_10 = $loginUser["C_SHAIN_NAME"];
+	}
 
 
 //工期-開始日
-$x_11 = "";
+$x_11_date = '';
 $x_11_id = "";
 if (is_array($inputExData["x_11"]) && (count($inputExData["x_11"]) > 0)) {
-	$x_11 = $inputExData["x_11"][0]["C_INPUT_CONTENT"];
+	$x_11_date = $inputExData["x_11"][0]["C_INPUT_CONTENT"];
 	$x_11_id = $inputExData["x_11"][0]["N_REPORT_DETAIL_ID"];
+} else if ($comKind == CK_COM_MAKE) {
+	// 現場情報の「施工開始日」を取得
+	$x_11_date = $genbaInfo["gstart"];
 }
+
 $infoEA["x_11"] = TRUE; //TEST
-$x_11_date = CMainFuncCtrl::circularDateSet(
-	$x_11,
+$x_11 = CMainFuncCtrl::circularDateSet(
+	$x_11_date,
 	$infoEA['x_11'],
 	['name' => CMainFuncCtrl::setNengoString('x_11')]
 );
-//	$x_11Attr = [];
-//	$x_11Attr['name'] = CMainFuncCtrl::setNengoString('x_11');
-//	$x_11Attr['id'] = $x_11Attr['name'];
-//	if ($lumpFlg && !$lumpKakuninFlg)	$x_11Attr["disabled"] = "disabled";
-//    $infoEA["x_11"] = TRUE; //TEST
-//	$x_11_date = CMainFuncCtrl::circularDateSet(
-//		$x_11,
-//		$infoEA["x_11"],
-//		$x_11Attr
-//	);
 
 	//工期-終了日
-$x_12 = '';
+$x_12_date = '';
 $x_12_id = '';
 if (is_array($inputExData["x_12"]) && (count($inputExData["x_12"]) > 0)) {
-	$x_12 = $inputExData["x_12"][0]["C_INPUT_CONTENT"];
+	$x_12_date = $inputExData["x_12"][0]["C_INPUT_CONTENT"];
 	$x_12_id = $inputExData["x_12"][0]["N_REPORT_DETAIL_ID"];
+} else if ($comKind == CK_COM_MAKE) {
+	// 現場情報の「施工終了日」を取得
+	$x_12_date = $genbaInfo["gend"];
 }
 $infoEA["x_12"] = TRUE; //TEST
-$x_12_date = CMainFuncCtrl::circularDateSet(
-	$x_12,
+$x_12 = CMainFuncCtrl::circularDateSet(
+	$x_12_date,
 	$infoEA['x_12'],
 	['name' => CMainFuncCtrl::setNengoString('x_12')]
 );
-
-//	$x_12Attr = [];
-//	$x_12Attr['name'] = CMainFuncCtrl::setNengoString('x_12');
-//	$x_12Attr['id'] = $x_12Attr['name'];
-////	if ($lumpFlg && !$lumpKakuninFlg)	$x_12Attr["disabled"] = "disabled";
-//
-//	$x_12_date = CMainFuncCtrl::circularDateSet(
-//		$x_12,
-//		$infoEA["x_12"],
-//		$x_12Attr
-//	);
-//
-	
 
 	//工事着手日
 $x_13 = '';
@@ -1971,8 +2012,10 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x8'>";
+    if ($comKind == CK_COM_MAKE) echo "<span class='text-addtional'>第</span>";
     echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
     //    echo getInputTextItem($infoEA["x_8"], $attr, $js, true);
+    if ($comKind == CK_COM_MAKE) echo "<span class='text-addtional'>号</span>";
     echo "</span>";
 	echo "</td>";
     echo"					<td class=\"td-x1-title input-title\" nowrap>工<br>事<br>名</td>\n";
@@ -2078,14 +2121,14 @@ echo "</td>";
 	// 工期-開始日
     echo "<span class='x11'>";
 	$dateOutFlg = ($infoEA["x_11"]
-		 || (!$infoEA["x_11"] && ($x_11_date['wyear'] != "")
-			 && ($x_11_date['mon'] != "") && ($x_11_date['mday'] != "")));
+		 || (!$infoEA["x_11"] && ($x_11['wyear'] != "")
+			 && ($x_11['mon'] != "") && ($x_11['mday'] != "")));
     $dateOutFlg = TRUE; //TESTTTTT
-	if ($dateOutFlg)	echo $x_11_date['nengo'];			// 元号
+	if ($dateOutFlg)	echo $x_11['nengo'];			// 元号
 	$attr = array();
 	$attr["id"] = "x_11_1";
 	$attr["name"] = "x_11_1";
-	$attr["value"] = $x_11_date['wyear'];
+	$attr["value"] = $x_11['wyear'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = " onKeyPress=\"go_next_field('x_11_2', event);\"";
@@ -2094,7 +2137,7 @@ echo "</td>";
 	$attr = array();
 	$attr["id"] = "x_11_2";
 	$attr["name"] = "x_11_2";
-	$attr["value"] = $x_11_date['mon'];
+	$attr["value"] = $x_11['mon'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = " onKeyPress=\"go_next_field('x_11_3', event);\"";
@@ -2103,7 +2146,7 @@ echo "</td>";
 	$attr = array();
 	$attr["id"] = "x_11_3";
 	$attr["name"] = "x_11_3";
-	$attr["value"] = $x_11_date['mday'];
+	$attr["value"] = $x_11['mday'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = "";
@@ -2159,14 +2202,14 @@ echo "<span class='x13'>(工事着手日: ";
 	echo"						";
 	//工期-終了日
 	$dateOutFlg = ($infoEA["x_12"]
-		 || (!$infoEA["x_12"] && ($x_12_date['wyear'] != "")
-			 && ($x_12_date['mon'] != "") && ($x_12_date['mday'] != "")));
+		 || (!$infoEA["x_12"] && ($x_12['wyear'] != "")
+			 && ($x_12['mon'] != "") && ($x_12['mday'] != "")));
 $dateOutFlg = TRUE; //TESTTTT
-	if ($dateOutFlg)	echo $x_12_date['nengo'];				// 元号
+	if ($dateOutFlg)	echo $x_12['nengo'];				// 元号
 	$attr = array();
 	$attr["id"] = "x_12_1";
 	$attr["name"] = "x_12_1";
-	$attr["value"] = $x_12_date['wyear'];
+	$attr["value"] = $x_12['wyear'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = " onKeyPress=\"go_next_field('x_12_2', event);\"";
@@ -2176,7 +2219,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$attr = array();
 	$attr["id"] = "x_12_2";
 	$attr["name"] = "x_12_2";
-	$attr["value"] = $x_12_date['mon'];
+	$attr["value"] = $x_12['mon'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = " onKeyPress=\"go_next_field('x_12_3', event);\"";
@@ -2185,7 +2228,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$attr = array();
 	$attr["id"] = "x_12_3";
 	$attr["name"] = "x_12_3";
-	$attr["value"] = $x_12_date['mday'];
+	$attr["value"] = $x_12['mday'];
 	$attr["maxlength"] = "2";
 	$attr["class"] = "textfield input-date";
 	$js = "";
@@ -2705,9 +2748,9 @@ echo "			<input type=\"hidden\" name=\"can_be_union\" value=\"" . $canBeUnion . 
 	echo"			<input type=\"hidden\" name=\"x_8" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_8_id . "\">\n";
 	echo"			<input type=\"hidden\" name=\"x_10" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_10_id . "\">\n";
 	echo"			<input type=\"hidden\" name=\"x_11" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_11_id . "\">\n";
-	echo"			<input type=\"hidden\" name=\"x_11\" value=\"" . $x_11_date['value'] . "\">\n";
+	echo"			<input type=\"hidden\" name=\"x_11\" value=\"" . $x_11['value'] . "\">\n";
     echo"			<input type=\"hidden\" name=\"x_12" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_12_id . "\">\n";
-    echo"			<input type=\"hidden\" name=\"x_12\" value=\"" . htmlspecialchars($x_12_date['value'], ENT_QUOTES) . "\">\n";
+    echo"			<input type=\"hidden\" name=\"x_12\" value=\"" . htmlspecialchars($x_12['value'], ENT_QUOTES) . "\">\n";
     echo"			<input type=\"hidden\" name=\"x_13" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_13_id . "\">\n";
     echo"			<input type=\"hidden\" name=\"x_13\" value=\"" . htmlspecialchars($x_13_date['value'], ENT_QUOTES) . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_14" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_14_id . "\">\n";
@@ -2719,8 +2762,8 @@ echo"			<input type=\"hidden\" name=\"x_18\" value=\"" . htmlspecialchars($x_18_
 
 //	echo"			<input type=\"hidden\" name=\"c_response_type_other_detail\" value=\"\">\n";
 //	echo"			<input type=\"hidden\" name=\"response_type_other_detail_2\" value=\"\">\n";
-//	echo"			<input type=\"hidden\" name=\"x_5\" value=\"" . htmlspecialchars($x_11_date['value'], ENT_QUOTES) . "\">\n";
-//	echo"			<input type=\"hidden\" name=\"x_6\" value=\"" . htmlspecialchars($x_12_date['value'], ENT_QUOTES) . "\">\n";
+//	echo"			<input type=\"hidden\" name=\"x_5\" value=\"" . htmlspecialchars($x_11['value'], ENT_QUOTES) . "\">\n";
+//	echo"			<input type=\"hidden\" name=\"x_6\" value=\"" . htmlspecialchars($x_12['value'], ENT_QUOTES) . "\">\n";
 	echo"			<div id=\"routeIDs\">\n";
 	echo"			</div>\n";
 
