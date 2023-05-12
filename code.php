@@ -1,22 +1,27 @@
 <?php
-
+echo "<pre> Line: " . __LINE__ . ", File: " . __FILE__ . "\n";
+print_r($infoEA);
+print_r($inputData);
+print_r($loginRole);
+print_r($loginUser);
+echo "</pre>";
 	// 岐阜県「第１２号様式　指示・承諾・協議・提出・報告書」
 
 	require_once("com_str.phl");
 	require_once("circular/crcl_rep_vwfunc2.phl");
 	global $signsInfo_pdf;
 
-	$hatsugisyaChk = array(ROLE_HACHUSHA => false, ROLE_UKEOISHA => false);
-	$hatsugijikouChk = array(MINUTE_INITTYPE_INSTRUCT => false, MINUTE_INITTYPE_AGREE => false
+//	$hatsugisyaChk = array(ROLE_HACHUSHA => false, ROLE_UKEOISHA => false);
+	$n_initiation_type = array(MINUTE_INITTYPE_INSTRUCT => false, MINUTE_INITTYPE_AGREE => false
 		, MINUTE_INITTYPE_CONFER => false, MINUTE_INITTYPE_PRESENT => false
 		, MINUTE_INITTYPE_REPORT => false);
 
-	$hacchusyasyoriChk = array(MINUTE_RESPONSE_CONSENT => false, MINUTE_RESPONSE_AGREE => false
+	$n_response_type = array(MINUTE_RESPONSE_CONSENT => false, MINUTE_RESPONSE_AGREE => false
 		, MINUTE_RESPONSE_INSTRUCT => false, MINUTE_RESPONSE_ACCEPT => false);
-	$hacchusyasyorisonota = "";
-	$ukeoisyoriChk = array(MINUTE_RESPONSE_CONSENT => false, MINUTE_RESPONSE_AGREE => false
-		, MINUTE_RESPONSE_INSTRUCT => false, MINUTE_RESPONSE_ACCEPT => false);
-	$ukeoisyorisonota = "";
+//	$hacchusyasyorisonota = "";
+//	$ukeoisyoriChk = array(MINUTE_RESPONSE_CONSENT => false, MINUTE_RESPONSE_AGREE => false
+//		, MINUTE_RESPONSE_INSTRUCT => false, MINUTE_RESPONSE_ACCEPT => false);
+//	$ukeoisyorisonota = "";
 
 	// 起案画面表示時のデータ取得
 	if (($act_code == AC_SHOW_START_CIRCULAR) && !$rcExec && !$befMkFlg) {
@@ -26,6 +31,25 @@
 			$inputData["N_PROPONENT_TYPE"] = ROLE_UKEOISHA;
 		}
 	}
+
+if ($infoEA['x_18']) {
+	$infoEA[BCODE_RESPONSE_DATE] = false;
+	$infoEA[BCODE_RESPONSE_TYPE] = false;
+	$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = false;
+}
+
+if ($allEditFlg || $mdlPEExec) {
+	$infoEA[BCODE_RESPONSE_DATE] = true;
+	$infoEA[BCODE_RESPONSE_TYPE] = true;
+	$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = true;
+//		$respUkeoiDtFlg = true;
+//		$respHachuDispFlg = true;
+//		$respUkeoiDispFlg = true;
+}
+if ($initConfExec) {
+	$infoEA[BCODE_PROPOSE_DATE] = true;
+	$infoEA[BCODE_RESPONSE_DATE] = true;
+}
 
 	// ワンレス支援からの遷移の場合、ワンレス情報から情報を取得する。
 	$odrStartFlg = false;
@@ -103,19 +127,27 @@
 	}
 
 	// 発議者区分
-	if ($inputData["N_PROPONENT_TYPE"] == ROLE_HACHUSHA) {
-		$hatsugisyaChk[$inputData["N_PROPONENT_TYPE"]] = true;
-		if ($inputData["N_SYORI_TYPE"] != "") {
-			$hacchusyasyoriChk[$inputData["N_SYORI_TYPE"]] = " checked";
-		}
-		$hacchusyasyorisonota = $inputData["C_SYORI_TYPE_OTHER_DETAIL"];
-	} else if ($inputData["N_PROPONENT_TYPE"] == ROLE_UKEOISHA) {
-		$hatsugisyaChk[$inputData["N_PROPONENT_TYPE"]] = true;
-		if ($inputData["N_SYORI_TYPE"] != "") {
-			$ukeoisyoriChk[$inputData["N_SYORI_TYPE"]] = " checked";
-		}
-		$ukeoisyorisonota = $inputData["C_SYORI_TYPE_OTHER_DETAIL"];
-	}
+    if ($inputData["N_RESPONSE_TYPE"] != "") {
+        $n_response_type[$inputData["N_RESPONSE_TYPE"]] = " checked";
+    }
+
+    // 発議事項
+    if ($inputData["N_INITIATION_TYPE"] != "") {
+        $n_initiation_type[$inputData["N_INITIATION_TYPE"]] = " checked";
+    }
+
+
+//	if ($inputData["N_PROPONENT_TYPE"] == ROLE_HACHUSHA) {
+//		$hatsugisyaChk[$inputData["N_PROPONENT_TYPE"]] = true;
+//
+////		$hacchusyasyorisonota = $inputData["C_SYORI_TYPE_OTHER_DETAIL"];
+//	} else if ($inputData["N_PROPONENT_TYPE"] == ROLE_UKEOISHA) {
+//		$hatsugisyaChk[$inputData["N_PROPONENT_TYPE"]] = true;
+//		if ($inputData["N_SYORI_TYPE"] != "") {
+//			$ukeoisyoriChk[$inputData["N_SYORI_TYPE"]] = " checked";
+//		}
+//		$ukeoisyorisonota = $inputData["C_SYORI_TYPE_OTHER_DETAIL"];
+//	}
 
 	// 発議年月日
 	$hatsugidate = CMainFuncCtrl::circularDateSet(
@@ -123,12 +155,6 @@
 		$infoEA[BCODE_PROPOSE_DATE],
 		['name' => CMainFuncCtrl::setNengoString(PN_REPMINUTE_PROP_DATE)]
 	);
-
-	// 発議事項
-	if ($inputData["N_INITIATION_TYPE"] != "") {
-		$hatsugijikouChk[$inputData["N_INITIATION_TYPE"]] = " checked";
-	}
-
 	// 内容
 	$minutes_detail = $inputData["C_MINUTES_DETAIL"];
 
@@ -368,7 +394,7 @@ if (is_array($inputExData["x_11"]) && (count($inputExData["x_11"]) > 0)) {
 	$x_11_date = $genbaInfo["gstart"];
 }
 
-$infoEA["x_11"] = TRUE; //TEST
+//$infoEA["x_11"] = TRUE; //TEST
 $x_11 = CMainFuncCtrl::circularDateSet(
 	$x_11_date,
 	$infoEA['x_11'],
@@ -385,7 +411,7 @@ if (is_array($inputExData["x_12"]) && (count($inputExData["x_12"]) > 0)) {
 	// 現場情報の「施工終了日」を取得
 	$x_12_date = $genbaInfo["gend"];
 }
-$infoEA["x_12"] = TRUE; //TEST
+//$infoEA["x_12"] = TRUE; //TEST
 $x_12 = CMainFuncCtrl::circularDateSet(
 	$x_12_date,
 	$infoEA['x_12'],
@@ -393,15 +419,15 @@ $x_12 = CMainFuncCtrl::circularDateSet(
 );
 
 	//工事着手日
-$x_13 = '';
+$x_13_date = '';
 $x_13_id = '';
 if (is_array($inputExData["x_13"]) && (count($inputExData["x_13"]) > 0)) {
-	$x_13 = $inputExData["x_13"][0]["C_INPUT_CONTENT"];
+	$x_13_date = $inputExData["x_13"][0]["C_INPUT_CONTENT"];
 	$x_13_id = $inputExData["x_13"][0]["N_REPORT_DETAIL_ID"];
 }
-$infoEA["x_13"] = TRUE; //TEST
-$x_13_date = CMainFuncCtrl::circularDateSet(
-	$x_13,
+//$infoEA["x_13"] = TRUE; //TEST
+$x_13 = CMainFuncCtrl::circularDateSet(
+	$x_13_date,
 	$infoEA['x_13'],
 	['name' => CMainFuncCtrl::setNengoString('x_13')]
 );
@@ -439,18 +465,27 @@ if (is_array($inputExData["x_17"]) && (count($inputExData["x_17"]) > 0)) {
 }
 
     //指示日
-$x_18 = '';
+$x_18_date = '';
 $x_18_id = '';
 if (is_array($inputExData["x_18"]) && (count($inputExData["x_18"]) > 0)) {
-	$x_18 = $inputExData["x_18"][0]["C_INPUT_CONTENT"];
+	$x_18_date = $inputExData["x_18"][0]["C_INPUT_CONTENT"];
 	$x_18_id = $inputExData["x_18"][0]["N_REPORT_DETAIL_ID"];
 }
-$infoEA["x_18"] = TRUE; //TEST
-$x_18_date = CMainFuncCtrl::circularDateSet(
-	$x_18,
+//$infoEA["x_18"] = TRUE; //TEST
+$x_18 = CMainFuncCtrl::circularDateSet(
+	$x_18_date,
 	$infoEA['x_18'],
 	['name' => CMainFuncCtrl::setNengoString('x_18')]
 );
+
+// 処理・回答年月日(回答)
+//$infoEA[BCODE_RESPONSE_DATE] = TRUE; //TEST
+$d_response_date = CMainFuncCtrl::circularDateSet(
+	$inputData["D_RESPONSE_DATE"],
+	$infoEA[BCODE_RESPONSE_DATE],
+	['name' => CMainFuncCtrl::setNengoString(PN_REPMINUTE_RESP_DATE)]
+);
+
 	// 宛先
 //	$x_7 = "";
 //	$x_7_id = "";
@@ -495,7 +530,7 @@ $x_18_date = CMainFuncCtrl::circularDateSet(
 //	if ($inputData["N_RESPONSE_CATEGORY"] !== "") {
 //		if ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA) {
 //			if ($inputData["N_RESPONSE_TYPE"] != "") {
-//				$hacchusyasyoriChk[$inputData["N_RESPONSE_TYPE"]] = " checked";
+//				$n_response_type[$inputData["N_RESPONSE_TYPE"]] = " checked";
 //			}
 //			$hacchusyasyorisonota = $inputData["C_RESPONSE_TYPE_OTHER_DETAIL"];
 //		} else {
@@ -506,93 +541,94 @@ $x_18_date = CMainFuncCtrl::circularDateSet(
 //		}
 //	}
 
-	$respHachuFlg = false;
-	$respUkeoiFlg = false;
-	if ($infoEA[BCODE_RESPONSE_TYPE]) {
+//	$infoEA[BCODE_RESPONSE_TYPE] = false;
+//	$respUkeoiFlg = false;
+	if ($infoEA['x_18']) {
+//		$infoEA[BCODE_RESPONSE_TYPE] = false;
+//		$respUkeoiFlg = true;
 		// 回答実行時はログインユーザ氏名を回答者名とする。
-		$respHachuFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
-		$respUkeoiFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
-		if (($respHachuFlg || $respUkeoiFlg) && !$mdlPEExec && !$initConfFlg) {
-			$inputData["C_RESPONDENT"] = $loginUser["C_SHAIN_NAME"];
-		}
+//		$infoEA[BCODE_RESPONSE_TYPE] = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
+//		$respUkeoiFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
+//		if (($infoEA[BCODE_RESPONSE_TYPE] || $respUkeoiFlg) && !$mdlPEExec && !$initConfFlg) {
+//			$inputData["C_RESPONDENT"] = $loginUser["C_SHAIN_NAME"];
+//		}
 	}
-	$respHachuDateFlg = false;
-	$respUkeoiDateFlg = false;
-	if ($infoEA[BCODE_RESPONSE_DATE]) {
-		$respHachuDateFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
-		$respUkeoiDateFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
-	}
-	$respHachuDtFlg = false;
-	$respUkeoiDtFlg = false;
-	if ($infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL]) {
-		$respHachuDtFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
-		$respUkeoiDtFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
-	}
-	$syoriFlg = false;
-	if ($infoEA[BCODE_SYORI_TYPE]) {
-		$respHachuFlg = true;
-		$respUkeoiFlg = true;
-		$syoriFlg = true;
-	}
-	if ($infoEA[BCODE_SYORI_DATE]) {
-		$respHachuDateFlg = true;
-		$respUkeoiDateFlg = true;
-	}
-	if ($infoEA[BCODE_SYORI_TYPE_OTHER_DETAIL]) {
-		$respHachuDtFlg = true;
-		$respUkeoiDtFlg = true;
-	}
-	$respHachuDispFlg = false;
-	$respUkeoiDispFlg = false;
-	if ($respHachuFlg || $respUkeoiFlg || $respHachuDateFlg || $respUkeoiDateFlg
-			|| $respHachuDtFlg || $respUkeoiDtFlg) {
-		if (!$syoriFlg) {
-			$respHachuDispFlg = ($respHachuFlg
-				 && ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA));
-			$respUkeoiDispFlg = ($respUkeoiFlg
-				 && ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA));
-		} else {
-			$respHachuDispFlg = ($inputData["N_PROPONENT_TYPE"] == ROLE_HACHUSHA);
-			$respUkeoiDispFlg = ($inputData["N_PROPONENT_TYPE"] == ROLE_UKEOISHA);
-		}
-	}
+//	$infoEA[BCODE_RESPONSE_DATE] = false;
+//	$respUkeoiDateFlg = false;
+//	if ($infoEA[BCODE_RESPONSE_DATE]) {
+////		$infoEA[BCODE_RESPONSE_DATE] = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
+////		$respUkeoiDateFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
+//	}
+//	$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = false;
+//	$respUkeoiDtFlg = false;
+//	if ($infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL]) {
+//		$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA);
+//		$respUkeoiDtFlg = ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA);
+//	}
+//	$syoriFlg = false;
+//	if ($infoEA[BCODE_SYORI_TYPE]) {
+//		$infoEA[BCODE_RESPONSE_TYPE] = true;
+//		$respUkeoiFlg = true;
+//		$syoriFlg = true;
+//	}
+//	if ($infoEA[BCODE_SYORI_DATE]) {
+//		$infoEA[BCODE_RESPONSE_DATE] = true;
+//		$respUkeoiDateFlg = true;
+//	}
+//	if ($infoEA[BCODE_SYORI_TYPE_OTHER_DETAIL]) {
+//		$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = true;
+//		$respUkeoiDtFlg = true;
+//	}
+//	$respHachuDispFlg = false;
+//	$respUkeoiDispFlg = false;
+//	if ($infoEA[BCODE_RESPONSE_TYPE] || $respUkeoiFlg || $infoEA[BCODE_RESPONSE_DATE] || $respUkeoiDateFlg
+//			|| $infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] || $respUkeoiDtFlg) {
+////		if (!$syoriFlg) {
+////			$respHachuDispFlg = ($infoEA[BCODE_RESPONSE_TYPE]
+////				 && ($inputData["N_RESPONSE_CATEGORY"] == ROLE_HACHUSHA));
+////			$respUkeoiDispFlg = ($respUkeoiFlg
+////				 && ($inputData["N_RESPONSE_CATEGORY"] == ROLE_UKEOISHA));
+////		}
+////		else {
+////			$respHachuDispFlg = ($inputData["N_PROPONENT_TYPE"] == ROLE_HACHUSHA);
+////			$respUkeoiDispFlg = ($inputData["N_PROPONENT_TYPE"] == ROLE_UKEOISHA);
+////		}
+//	}
 
-	if ($allEditFlg) {
-		$respHachuFlg = true;
-		$respUkeoiFlg = true;
-		$respHachuDateFlg = true;
-		$respUkeoiDateFlg = true;
-		$respHachuDtFlg = true;
-		$respUkeoiDtFlg = true;
-		$respHachuDispFlg = true;
-		$respUkeoiDispFlg = true;
-	}
+//    if ($infoEA['x_18']) {
+//        $infoEA[BCODE_RESPONSE_DATE] = false;
+//        $infoEA[BCODE_RESPONSE_TYPE] = false;
+//        $infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = false;
+//    }
+//
+//	if ($allEditFlg || $mdlPEExec) {
+//		$infoEA[BCODE_RESPONSE_DATE] = true;
+//		$infoEA[BCODE_RESPONSE_TYPE] = true;
+//		$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = true;
+////		$respUkeoiDtFlg = true;
+////		$respHachuDispFlg = true;
+////		$respUkeoiDispFlg = true;
+//	}
+//	if ($initConfExec) {
+//		$infoEA[BCODE_PROPOSE_DATE] = true;
+//		$infoEA[BCODE_RESPONSE_DATE] = true;
+//    }
 
-	if ($mdlPEExec) {
-		$respHachuFlg = true;
-		$respUkeoiFlg = true;
-		$respHachuDateFlg = true;
-		$respUkeoiDateFlg = true;
-		$respHachuDtFlg = true;
-		$respUkeoiDtFlg = true;
-		$allEditFlg = true;
-	}
-	if ($initConfFlg) {
-		$respHachuDateFlg = true;
-		$respUkeoiDateFlg = true;
-	}
+//	if ($mdlPEExec) {
+//		$infoEA[BCODE_RESPONSE_TYPE] = true;
+////		$respUkeoiFlg = true;
+//		$infoEA[BCODE_RESPONSE_DATE] = true;
+////		$respUkeoiDateFlg = true;
+//		$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = true;
+////		$respUkeoiDtFlg = true;
+//		$allEditFlg = true;
+//	}
+//	if ($initConfFlg) {
+//		$infoEA[BCODE_RESPONSE_DATE] = true;
+////		$respUkeoiDateFlg = true;
+//	}
 
-	// 処理・回答年月日(回答)　年月日
-	$hDate = ($inputData["N_RESPONSE_CATEGORY"] != ROLE_UKEOISHA) ? $inputData["D_RESPONSE_DATE"] : $inputData["D_SYORI_DATE"];
-	$hAttr = [];
-	$hAttr['name'] = CMainFuncCtrl::setNengoString(PN_REPMINUTE_RESP_DATE);
-	$hAttr['id'] = $hAttr['name'];
-$respHachuDateFlg = TRUE; //TEST
-	$hacchusyadate = CMainFuncCtrl::circularDateSet(
-		$hDate,
-		$respHachuDateFlg,
-		$hAttr
-	);
+
 
 	// 処理・回答-受注者年月日
 //	$uDate = ($inputData["N_RESPONSE_CATEGORY"] != ROLE_UKEOISHA) ? $inputData["D_SYORI_DATE"] : $inputData["D_RESPONSE_DATE"];
@@ -606,6 +642,59 @@ $respHachuDateFlg = TRUE; //TEST
 //	);
 ?>
 <style type="text/css">
+
+    .text-fixed {
+        position: relative;
+        top: 10px;
+    }
+
+    .x5, .x10 {
+        padding-left: 2px;
+    }
+
+    .x14, .x15, .x16, .x17 {
+        padding-left: 10px;
+    }
+
+    .func-tbl td {
+        padding: 5px 0;
+    }
+    
+    .align-title {
+        display: flex;
+        text-align: right;
+        justify-content: center;
+    }
+
+    .x3 {
+        width: 145px;
+        padding: 5px 10px;
+    }
+    
+    .td-x1 {
+        /*width: 245px;*/
+    }
+
+    #x_8 {
+        width: 120px;
+    }
+    
+    .x2, .x7 {
+        padding-left: 10px;
+    }
+
+    .x1 {
+        padding: 5px 10px;
+        width: 225px;
+    }
+
+    .td-x8-title {
+        width: 70px;
+    }
+    
+    #x_1 {
+        width: 210px;
+    }
 <!--
 input.disable {
 	border: 1px solid #C9CCD4;
@@ -650,9 +739,9 @@ table td .labelr {
 	margin-right: 1em;
 }
 
-table td.r {
-	width: 25%;
-}
+/*table td.r {*/
+/*	width: 25%;*/
+/*}*/
 table td.r label {
 	margin-right: 2em;
 }
@@ -846,6 +935,16 @@ select.form-input-nengo {
     display: inline-block;
     margin-left: 70px;
 }
+
+
+.func-tbl td.input-title, .in-func-tbl td.input-title {
+    width: auto;
+}
+
+.td-x15-title.input-title {
+    width: 65px;
+}
+
 -->
 </style>
 <?php
@@ -889,11 +988,11 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
     if (invalidFormDate(check_object)) return false;
 	<?php endif; ?>
  
-	<?php if (true): ?> // TESTTTTTTT
-<!--	--><?php //if ($infoEA[BCODE_RESPONSE_DATE]): ?>
-    var check_name = '<?= PN_REPMINUTE_RESP_DATE ?>';
-    var check_object = createCheckDateObject(fromfrm, check_name, '処理・回答年月日(回答)');
-    if (invalidFormDate(check_object)) return false;
+<!--	--><?php //if (true): ?>// // TESTTTTTTT
+    <?php if ($infoEA[BCODE_RESPONSE_DATE]): ?>
+        var check_name = '<?= PN_REPMINUTE_RESP_DATE ?>';
+        var check_object = createCheckDateObject(fromfrm, check_name, '処理・回答年月日(回答)');
+        if (invalidFormDate(check_object)) return false;
 	<?php endif; ?>
     
     if (!chkFlg) {
@@ -1060,16 +1159,7 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
                 return false;
             }
         }
-
-        // 監理事務所名
-        if (!checkElemType(fromfrm.x_14, "hidden")) {
-            jsHanToZen(fromfrm.x_14);
-            if (InputCheck(fromfrm.x_14, 0, 20, 0, "監理事務所名", 6) == false){
-                fromfrm.x_14.focus();
-                return false;
-            }
-        }
-
+        
         // 建築立会人
         if (!checkElemType(fromfrm.x_15, "hidden")) {
             jsHanToZen(fromfrm.x_15);
@@ -1134,7 +1224,7 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
 			//		if (fromfrm.<?//= PN_REPMINUTE_RESP_CAT ?>//.value == '<?//= ROLE_UKEOISHA ?>//')	conf_contractor = true;
 			//	}
 			//}
-<?php if ($respHachuDateFlg): ?>
+<?php if ($infoEA[BCODE_RESPONSE_DATE]): ?>
 			// 発注者-処理・回答
 			//if (conf_orderer) {
 			//	// 事項
@@ -1276,12 +1366,16 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
     sendfrm.x_13.value = getWarekiFormat(x13_date, 'D');
 
     // 指示日
-    var x18_date = $(fromfrm).find('input[name=x_18]').val();
-    sendfrm.x_18.value = getWarekiFormat(x18_date, 'D');
+    // var x18_date = $(fromfrm).find('input[name=x_18]').val();
+    // //平成31年 2月 3日
+    // var a = getWarekiFormat(x18_date, 'D');
+    // var b = getWarekiFormat(x18_date, 'M');
+    // // sendfrm.x_18.value = getWarekiFormat(x18_date, 'D');
+    sendfrm.x_18.value = $(fromfrm).find('input[name=x_18_2]').val() + '月 ' + $(fromfrm).find('input[name=x_18_3]').val() + '日';
 
     // 処理・回答年月日(回答)
     var res_date = $(fromfrm).find('input[name=<?php echo PN_REPMINUTE_RESP_DATE ?>]').val();
-    sendfrm.<?php echo PN_REPMINUTE_RESP_DATE ?>.value = getWarekiFormat(res_date, 'D');
+    sendfrm.<?php echo PN_REPMINUTE_RESP_DATE ?>_2.value = getWarekiFormat(res_date, 'D');
 
 	// 発議事項
 	sendfrm.n_initiation_type_1.value = "";
@@ -1400,6 +1494,7 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
 	sendfrm.<?php echo(PN_REPMINUTE_DETAIL); ?>.value = fromfrm.<?php echo(PN_REPMINUTE_DETAIL); ?>.value;
 	
 	// 工事名
+    sendfrm.x_1.value = '';
     var rowCnt = getStringRowInTA(fromfrm.x_1.value, "32");
     if (rowCnt == 2) {
         sendfrm.x_1_2.value = fromfrm.x_1.value;
@@ -1417,6 +1512,7 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
 	sendfrm.x_2.value = fromfrm.x_2.value;
  
 	// 受注者
+    sendfrm.x_3.value = '';
     var rowCnt = getStringRowInTA(fromfrm.x_3.value, "20");
     if (rowCnt == 2) {
         sendfrm.x_3_2.value = fromfrm.x_3.value;
@@ -1470,7 +1566,8 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
     sendfrm.x_17.value = fromfrm.x_17.value;
 
     // 処理・回答　その他　内容(回答)
-    sendfrm.c_response_type_other_detail.value = fromfrm.c_response_type_other_detail.value;
+    // sendfrm.c_response_type_other_detail_1.value = fromfrm.c_response_type_other_detail.value;
+    sendfrm.c_response_type_other_detail_2.value = fromfrm.c_response_type_other_detail.value;
 
 	// 処理・回答-内容 ※受注者発議
 	sendfrm.n_response_type_1.value = "";
@@ -1614,11 +1711,128 @@ function setPDFParam(fromfrm, sendfrm, chkFlg){
 	if (!this.setCustomSignPdfInfo && this.setSignPdfInfo)	setSignPdfInfo(sendfrm);
 	else if (this.setCustomSignPdfInfo)	setCustomSignPdfInfo(sendfrm);
 
-	var setAttrObj = sendfrm.<?php echo(PN_PDF_SETATTR); ?>;
-	if (setAttrObj != "") {
-		setAttrStr = setAttrObj.value;
-		setAttrObj.value= setAttrStr;
-	}
+    var setAttrObj = sendfrm.<?php echo(PN_PDF_SETATTR); ?>;
+    if (setAttrObj != "") {
+        setAttrStr = setAttrObj.value;
+        setAttrObj.value= setAttrStr;
+    }
+
+    // 発議事項（上部）
+    var initiationType1Str = "";
+    if (sendfrm.n_initiation_type_1.value == 1){
+        initiationType1Str = "box_initiation_type_1.visible=true, line_initiation_type_1.visible=false, "
+            +"box_initiation_type_2.visible=false, line_initiation_type_2.visible=true, "
+            +"box_initiation_type_3.visible=false, line_initiation_type_3.visible=true, "
+            +"box_initiation_type_4.visible=false, line_initiation_type_4.visible=true, "
+            +"box_initiation_type_5.visible=false, line_initiation_type_5.visible=true, "
+    } else if (sendfrm.n_initiation_type_2.value == 1){
+        initiationType1Str = "box_initiation_type_1.visible=false, line_initiation_type_1.visible=true, "
+            +"box_initiation_type_2.visible=true, line_initiation_type_2.visible=false, "
+            +"box_initiation_type_3.visible=false, line_initiation_type_3.visible=true, "
+            +"box_initiation_type_4.visible=false, line_initiation_type_4.visible=true, "
+            +"box_initiation_type_5.visible=false, line_initiation_type_5.visible=true, "
+    } else if (sendfrm.n_initiation_type_3.value == 1){
+        initiationType1Str = "box_initiation_type_1.visible=false, line_initiation_type_1.visible=true, "
+            +"box_initiation_type_2.visible=false, line_initiation_type_2.visible=true, "
+            +"box_initiation_type_3.visible=true, line_initiation_type_3.visible=false, "
+            +"box_initiation_type_4.visible=false, line_initiation_type_4.visible=true, "
+            +"box_initiation_type_5.visible=false, line_initiation_type_5.visible=true, "
+    } else if (sendfrm.n_initiation_type_4.value == 1){
+        initiationType1Str = "box_initiation_type_1.visible=false, line_initiation_type_1.visible=true, "
+            +"box_initiation_type_2.visible=false, line_initiation_type_2.visible=true, "
+            +"box_initiation_type_3.visible=false, line_initiation_type_3.visible=true, "
+            +"box_initiation_type_4.visible=true, line_initiation_type_4.visible=false, "
+            +"box_initiation_type_5.visible=false, line_initiation_type_5.visible=true, "
+    } else if (sendfrm.n_initiation_type_5.value == 1){
+        initiationType1Str = "box_initiation_type_1.visible=false, line_initiation_type_1.visible=true, "
+            +"box_initiation_type_2.visible=false, line_initiation_type_2.visible=true, "
+            +"box_initiation_type_3.visible=false, line_initiation_type_3.visible=true, "
+            +"box_initiation_type_4.visible=false, line_initiation_type_4.visible=true, "
+            +"box_initiation_type_5.visible=true, line_initiation_type_5.visible=false, "
+    } else {
+        initiationType1Str = "box_initiation_type_1.visible=false, line_initiation_type_1.visible=false, "
+            +"box_initiation_type_2.visible=false, line_initiation_type_2.visible=false, "
+            +"box_initiation_type_3.visible=false, line_initiation_type_3.visible=false, "
+            +"box_initiation_type_4.visible=false, line_initiation_type_4.visible=false, "
+            +"box_initiation_type_5.visible=false, line_initiation_type_5.visible=false, "
+    }
+
+    // 発議事項（中央）
+    var initiationType2Str = "";
+    if (sendfrm.n_initiation_type_2_1.value == 1){
+        initiationType2Str = "box_initiation_type_1_2.visible=true, line_initiation_type_1_2.visible=false, "
+            +"box_initiation_type_2_2.visible=false, line_initiation_type_2_2.visible=true, "
+            +"box_initiation_type_3_2.visible=false, line_initiation_type_3_2.visible=true, "
+            +"box_initiation_type_4_2.visible=false, line_initiation_type_4_2.visible=true, "
+            +"box_initiation_type_5_2.visible=false, line_initiation_type_5_2.visible=true, "
+    } else if (sendfrm.n_initiation_type_2_2.value == 1){
+        initiationType2Str = "box_initiation_type_1_2.visible=false, line_initiation_type_1_2.visible=true, "
+            +"box_initiation_type_2_2.visible=true, line_initiation_type_2_2.visible=false, "
+            +"box_initiation_type_3_2.visible=false, line_initiation_type_3_2.visible=true, "
+            +"box_initiation_type_4_2.visible=false, line_initiation_type_4_2.visible=true, "
+            +"box_initiation_type_5_2.visible=false, line_initiation_type_5_2.visible=true, "
+    } else if (sendfrm.n_initiation_type_2_3.value == 1){
+        initiationType2Str = "box_initiation_type_1_2.visible=false, line_initiation_type_1_2.visible=true, "
+            +"box_initiation_type_2_2.visible=false, line_initiation_type_2_2.visible=true, "
+            +"box_initiation_type_3_2.visible=true, line_initiation_type_3_2.visible=false, "
+            +"box_initiation_type_4_2.visible=false, line_initiation_type_4_2.visible=true, "
+            +"box_initiation_type_5_2.visible=false, line_initiation_type_5_2.visible=true, "
+    } else if (sendfrm.n_initiation_type_2_4.value == 1){
+        initiationType2Str = "box_initiation_type_1_2.visible=false, line_initiation_type_1_2.visible=true, "
+            +"box_initiation_type_2_2.visible=false, line_initiation_type_2_2.visible=true, "
+            +"box_initiation_type_3_2.visible=false, line_initiation_type_3_2.visible=true, "
+            +"box_initiation_type_4_2.visible=true, line_initiation_type_4_2.visible=false, "
+            +"box_initiation_type_5_2.visible=false, line_initiation_type_5_2.visible=true, "
+    } else if (sendfrm.n_initiation_type_2_5.value == 1){
+        initiationType2Str = "box_initiation_type_1_2.visible=false, line_initiation_type_1_2.visible=true, "
+            +"box_initiation_type_2_2.visible=false, line_initiation_type_2_2.visible=true, "
+            +"box_initiation_type_3_2.visible=false, line_initiation_type_3_2.visible=true, "
+            +"box_initiation_type_4_2.visible=false, line_initiation_type_4_2.visible=true, "
+            +"box_initiation_type_5_2.visible=true, line_initiation_type_5_2.visible=false, "
+    } else {
+        initiationType2Str = "box_initiation_type_1_2.visible=false, line_initiation_type_1_2.visible=false, "
+            +"box_initiation_type_2_2.visible=false, line_initiation_type_2_2.visible=false, "
+            +"box_initiation_type_3_2.visible=false, line_initiation_type_3_2.visible=false, "
+            +"box_initiation_type_4_2.visible=false, line_initiation_type_4_2.visible=false, "
+            +"box_initiation_type_5_2.visible=false, line_initiation_type_5_2.visible=false, "
+    }
+
+
+    // 発議事項（上部）
+    var initiationTypeResponseStr = "";
+    if (sendfrm.n_response_type_1.value == 1){
+        initiationTypeResponseStr = "box_response_type_type_1.visible=true, line_response_type_type_1.visible=false, "
+            +"box_response_type_type_2.visible=false, line_response_type_type_2.visible=true, "
+            +"box_response_type_type_3.visible=false, line_response_type_type_3.visible=true, "
+            +"box_response_type_type_4.visible=false, line_response_type_type_4.visible=true, "
+    } else if (sendfrm.n_response_type_2.value == 1){
+        initiationTypeResponseStr = "box_response_type_type_1.visible=false, line_response_type_type_1.visible=true, "
+            +"box_response_type_type_2.visible=true, line_response_type_type_2.visible=false, "
+            +"box_response_type_type_3.visible=false, line_response_type_type_3.visible=true, "
+            +"box_response_type_type_4.visible=false, line_response_type_type_4.visible=true, "
+    } else if (sendfrm.n_response_type_3.value == 1){
+        initiationTypeResponseStr = "box_response_type_type_1.visible=false, line_response_type_type_1.visible=true, "
+            +"box_response_type_type_2.visible=false, line_response_type_type_2.visible=true, "
+            +"box_response_type_type_3.visible=true, line_response_type_type_3.visible=false, "
+            +"box_response_type_type_4.visible=false, line_response_type_type_4.visible=true, "
+    } else if (sendfrm.n_response_type_4.value == 1){
+        initiationTypeResponseStr = "box_response_type_type_1.visible=false, line_response_type_type_1.visible=true, "
+            +"box_response_type_type_2.visible=false, line_response_type_type_2.visible=true, "
+            +"box_response_type_type_3.visible=false, line_response_type_type_3.visible=true, "
+            +"box_response_type_type_4.visible=true, line_response_type_type_4.visible=false, "
+    }  else {
+        initiationTypeResponseStr = "box_response_type_type_1.visible=false, line_response_type_type_1.visible=false, "
+            +"box_response_type_type_2.visible=false, line_response_type_type_2.visible=false, "
+            +"box_response_type_type_3.visible=false, line_response_type_type_3.visible=false, "
+            +"box_response_type_type_4.visible=false, line_response_type_type_4.visible=false, "
+    }
+    
+    if (setAttrObj != "") {
+        if (setAttrObj.value != "") setAttrObj.value += ",";
+        setAttrObj.value += initiationType1Str;
+        setAttrObj.value += initiationType2Str;
+        setAttrObj.value += initiationTypeResponseStr;
+    }
 
 	return true;
 }
@@ -1702,68 +1916,68 @@ function prop_radioCheckbox(el) {
 
 	if ("<?php echo($allEditFlg); ?>" == "")	return;
 
-	//処理・回答の表示切替とデータ移動
-	var prop1El = document.getElementById("proponent_type_1");
-	var prop2El = document.getElementById("proponent_type_2");
-	var selClient = prop1El.checked ? 1 : (prop2El.checked ? 0 : -1);
-	var selContractor = prop1El.checked ? 0 : (prop2El.checked ? 1 : -1);
-	if (selClient != -1 && selContractor != -1) {
-		var srcIdx = 0;
-		var dstIdx = 0;
-		var exchgTxtEls = [
-			["c_response_type_other_detail", "response_type_other_detail_2"],
-			["<?= (PN_REPMINUTE_RESP_DATE) ?>_1_1", "<?= (PN_REPMINUTE_RESP_DATE) ?>_2_1"],
-			["<?= (PN_REPMINUTE_RESP_DATE) ?>_1_2", "<?= (PN_REPMINUTE_RESP_DATE) ?>_2_2"],
-			["<?= (PN_REPMINUTE_RESP_DATE) ?>_1_3", "<?= (PN_REPMINUTE_RESP_DATE) ?>_2_3"],
-		];
-		var exchgChkEls = [
-			["n_response_type","response_type_2_1"],
-			["n_response_type_2","response_type_2_2"],
-			["n_response_type_3","response_type_2_3"],
-			["n_response_type_4","response_type_2_4"]
-		];
-
-		//表示切替
-		if (selClient == 1) {
-			if (!$('#respClient').hasClass('hide')) {
-				$('#respClient').addClass('hide');
-			}
-			if ($('#respContractor').hasClass('hide')) {
-				$('#respContractor').removeClass('hide');
-			}
-		} else if (selContractor == 1) {
-			if (!$('#respContractor').hasClass('hide')) {
-				$('#respContractor').addClass('hide');
-			}
-			if ($('#respClient').hasClass('hide')) {
-				$('#respClient').removeClass('hide');
-			}
-		}
-
-		//データ移動
-		srcIdx = selContractor;
-		dstIdx = selClient;
-		for (var i = 0; i < exchgTxtEls.length; i++) {
-			var srcEl = document.getElementById(exchgTxtEls[i][srcIdx]);
-			var dstEl = document.getElementById(exchgTxtEls[i][dstIdx]);
-			if (srcEl.value == "") continue;
-			dstEl.value = srcEl.value;
-			srcEl.value = "";
-		}
-		for (var i = 0; i < exchgChkEls.length; i++) {
-			var srcEl = document.getElementById(exchgChkEls[i][srcIdx]);
-			var dstEl = document.getElementById(exchgChkEls[i][dstIdx]);
-			if (!srcEl.checked) continue;
-			dstEl.checked = srcEl.checked;
-			srcEl.checked = false;
-		}
-	}
-
-	if (prop1El.checked && !prop2El.checked) {
-		$('#<?= (PN_REPMINUTE_RESP_DATE) ?>_2_nengo').val($('#<?= (PN_REPMINUTE_RESP_DATE) ?>_1_nengo').val());
-	} else if (!prop1El.checked && prop2El.checked) {
-		$('#<?= (PN_REPMINUTE_RESP_DATE) ?>_1_nengo').val($('#<?= (PN_REPMINUTE_RESP_DATE) ?>_2_nengo').val());
-	}
+	////処理・回答の表示切替とデータ移動
+	//var prop1El = document.getElementById("proponent_type_1");
+	//var prop2El = document.getElementById("proponent_type_2");
+	//var selClient = prop1El.checked ? 1 : (prop2El.checked ? 0 : -1);
+	//var selContractor = prop1El.checked ? 0 : (prop2El.checked ? 1 : -1);
+	//if (selClient != -1 && selContractor != -1) {
+	//	var srcIdx = 0;
+	//	var dstIdx = 0;
+	//	var exchgTxtEls = [
+	//		["c_response_type_other_detail", "response_type_other_detail_2"],
+	//		["<?//= (PN_REPMINUTE_RESP_DATE) ?>//_1_1", "<?//= (PN_REPMINUTE_RESP_DATE) ?>//_2_1"],
+	//		["<?//= (PN_REPMINUTE_RESP_DATE) ?>//_1_2", "<?//= (PN_REPMINUTE_RESP_DATE) ?>//_2_2"],
+	//		["<?//= (PN_REPMINUTE_RESP_DATE) ?>//_1_3", "<?//= (PN_REPMINUTE_RESP_DATE) ?>//_2_3"],
+	//	];
+	//	var exchgChkEls = [
+	//		["n_response_type","response_type_2_1"],
+	//		["n_response_type_2","response_type_2_2"],
+	//		["n_response_type_3","response_type_2_3"],
+	//		["n_response_type_4","response_type_2_4"]
+	//	];
+    //
+	//	//表示切替
+	//	if (selClient == 1) {
+	//		if (!$('#respClient').hasClass('hide')) {
+	//			$('#respClient').addClass('hide');
+	//		}
+	//		if ($('#respContractor').hasClass('hide')) {
+	//			$('#respContractor').removeClass('hide');
+	//		}
+	//	} else if (selContractor == 1) {
+	//		if (!$('#respContractor').hasClass('hide')) {
+	//			$('#respContractor').addClass('hide');
+	//		}
+	//		if ($('#respClient').hasClass('hide')) {
+	//			$('#respClient').removeClass('hide');
+	//		}
+	//	}
+    //
+	//	//データ移動
+	//	srcIdx = selContractor;
+	//	dstIdx = selClient;
+	//	for (var i = 0; i < exchgTxtEls.length; i++) {
+	//		var srcEl = document.getElementById(exchgTxtEls[i][srcIdx]);
+	//		var dstEl = document.getElementById(exchgTxtEls[i][dstIdx]);
+	//		if (srcEl.value == "") continue;
+	//		dstEl.value = srcEl.value;
+	//		srcEl.value = "";
+	//	}
+	//	for (var i = 0; i < exchgChkEls.length; i++) {
+	//		var srcEl = document.getElementById(exchgChkEls[i][srcIdx]);
+	//		var dstEl = document.getElementById(exchgChkEls[i][dstIdx]);
+	//		if (!srcEl.checked) continue;
+	//		dstEl.checked = srcEl.checked;
+	//		srcEl.checked = false;
+	//	}
+	//}
+    //
+	//if (prop1El.checked && !prop2El.checked) {
+	//	$('#<?//= (PN_REPMINUTE_RESP_DATE) ?>//_2_nengo').val($('#<?//= (PN_REPMINUTE_RESP_DATE) ?>//_1_nengo').val());
+	//} else if (!prop1El.checked && prop2El.checked) {
+	//	$('#<?//= (PN_REPMINUTE_RESP_DATE) ?>//_1_nengo').val($('#<?//= (PN_REPMINUTE_RESP_DATE) ?>//_2_nengo').val());
+	//}
 }
 
 function viewInitRepType(vwFlg) {
@@ -1811,7 +2025,7 @@ function viewInitRepType(vwFlg) {
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_1\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示   ・   </label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示   ・   </label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_2",
@@ -1821,7 +2035,7 @@ function viewInitRepType(vwFlg) {
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾   ・   </label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾   ・   </label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_3",
@@ -1831,7 +2045,7 @@ function viewInitRepType(vwFlg) {
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_3\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_CONFER], $js, array()) . "協議    ・   </label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_CONFER], $js, array()) . "協議    ・   </label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_4",
@@ -1841,7 +2055,7 @@ function viewInitRepType(vwFlg) {
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_4\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出   ・   </label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出   ・   </label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_5",
@@ -1851,7 +2065,7 @@ function viewInitRepType(vwFlg) {
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_5\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
+			, $n_initiation_type[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
 
 	echo"　事\n";
 	echo"					</td>\n";
@@ -1868,7 +2082,7 @@ function viewInitRepType(vwFlg) {
 	echo"				</tr>\n";
 
 	echo"				<tr>\n";
-	echo"					<td class='td-x2-x7' colspan=\"3\" nowrap>\n";
+	echo"					<td class='td-x2-x7' colspan=\"3\" >\n";
 	echo "<div class='x2'>";
 $attr = array();
 $attr["id"] = "x_2";
@@ -1897,8 +2111,8 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
 	
 	echo"					</td>\n";
 
-	echo"					<td class=\"td-propose-date-title input-title\" nowrap> 発年<br>月<br>議日</td>\n";
-	echo"					<td class=\"td-propose-date r\" nowrap>\n";
+	echo"					<td class=\"td-propose-date-title input-title\"><span class='align-title'>発 年<br>月<br>議 日</span></td>\n";
+	echo"					<td class=\"td-propose-date r\" >\n";
 	// 発議年月日
 	echo"						";
 	$dateOutFlg = ($infoEA[BCODE_PROPOSE_DATE]
@@ -1935,8 +2149,8 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
 	else	echo("&nbsp;\n");
 	echo"					</td>\n";
 
-	echo"					<td class=\"td-x5-x1-title input-title\" nowrap>発<br>議<br>者</td>\n";
-	echo"					<td class='td-x5-x10' nowrap colspan='2'>\n";
+	echo"					<td class=\"td-x5-x1-title input-title\" >発<br>議<br>者</td>\n";
+	echo"					<td class='td-x5-x10'  colspan='2'>\n";
 //	$attr = array();
 //	$attr["id"] = "proponent_type_1";
 //	$attr["name"] = PN_REPMINUTE_PROP_TYPE;
@@ -1961,7 +2175,7 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
 //		. getInputCheckboxItem($infoEA[BCODE_PROPONENT_TYPE], $attr
 //			, $hatsugisyaChk[ROLE_UKEOISHA], $js, array()) . "受注者</label>\n";
 //	echo"					</td>\n";
-//	echo"					<td id=\"input_prop\" nowrap>";
+//	echo"					<td id=\"input_prop\" >";
 //	$attr = array();
 //	$attr["id"] = "x_8";
 //	$attr["name"] = "x_8";
@@ -1980,8 +2194,8 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
 	$attr["class"] = "textfield";
 	$js = "";
 	echo "<div class='x5'>";
-//	echo getInputTextItem($infoEA["x_5"], $attr, $js, true);
-	echo getInputTextItem(true, $attr, $js, true); //TESTTTTTTTTT
+	echo getInputTextItem($infoEA["x_5"], $attr, $js, true);
+//	echo getInputTextItem(true, $attr, $js, true); //TESTTTTTTTTT
 	echo "</div>";
 	// 発議者氏名
     $attr = array();
@@ -1993,15 +2207,15 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
     $attr["class"] = "textfield";
     $js = "";
     echo "<div class='x10'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-//    echo getInputTextItem($infoEA["x_10"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+    echo getInputTextItem($infoEA["x_10"], $attr, $js, true);
     echo "</div>";
     echo "</td>\n";
 	echo"				</tr>\n";
 
 	echo"				<tr>\n";
-	echo"					<td class=\"td-x8-title input-title\" nowrap>契約番号</td>\n";
-	echo"					<td  class='td-x8' nowrap colspan='2'>";
+	echo"					<td class=\"td-x8-title input-title\" >契約番号</td>\n";
+	echo"					<td  class='td-x8'  colspan='2'>";
     // 契約番号
     $attr = array();
     $attr["id"] = "x_8";
@@ -2013,13 +2227,13 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
     $js = "";
     echo "<span class='x8'>";
     if ($comKind == CK_COM_MAKE) echo "<span class='text-addtional'>第</span>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_8"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_8"], $attr, $js, true);
     if ($comKind == CK_COM_MAKE) echo "<span class='text-addtional'>号</span>";
     echo "</span>";
 	echo "</td>";
-    echo"					<td class=\"td-x1-title input-title\" nowrap>工<br>事<br>名</td>\n";
-    echo"					<td  class='td-x1' nowrap>";
+    echo"					<td class=\"td-x1-title input-title\" >工<br>事<br>名</td>\n";
+    echo"					<td  class='td-x1' >";
         //工事名
         $attr = array();
         $attr["name"] = "x_1";
@@ -2027,13 +2241,14 @@ echo"<span id=\"text_atesaki\">" . $textAtesaki . "</span>\n";
         $attr["rows"] = "5";
         $attr["cols"] = "32";
         $js = "";
-        //echo getTextAreaItem($infoEA["x_1"], $attr, $x_1, $js, true);
-        echo "<span class='x1'>";
-        echo getTextAreaItem(TRUE, $attr, $x_1, $js, true); //TESSTTTTTTTTTT
-        echo "</span>";
+        
+        echo "<div class='x1'>";
+echo getTextAreaItem($infoEA["x_1"], $attr, $x_1, $js, true);
+//        echo getTextAreaItem(TRUE, $attr, $x_1, $js, true); //TESSTTTTTTTTTT
+        echo "</div>";
     echo "</td>";
-echo"					<td class=\"td-x1-title input-title\" nowrap>受<br>注<br>者</td>\n";
-echo"					<td  class='td-x3' nowrap colspan='2'>";
+echo"					<td class=\"td-x1-title input-title\" >受<br>注<br>者</td>\n";
+echo"					<td  class='td-x3'  colspan='2'>";
     //受注者
     $attr = array();
     $attr["name"] = "x_3";
@@ -2041,10 +2256,10 @@ echo"					<td  class='td-x3' nowrap colspan='2'>";
     $attr["rows"] = "3";
     $attr["cols"] = "20";
     $js = "";
-    echo "<span class='x3'>";
-    //echo getTextAreaItem($infoEA["x_3"], $attr, $x_1, $js, true);
-    echo getTextAreaItem(TRUE, $attr, $x_3, $js, true); //TESSTTTTTTTTTT
-    echo "</span>";
+    echo "<div class='x3'>";
+    echo getTextAreaItem($infoEA["x_3"], $attr, $x_3, $js, true);
+//    echo getTextAreaItem(TRUE, $attr, $x_3, $js, true); //TESSTTTTTTTTTT
+    echo "</div>";
 echo "</td>";
 //	$attr = array();
 //	$attr["id"] = "x_2";
@@ -2058,7 +2273,7 @@ echo "</td>";
 	echo"				</tr>\n";
 
 	echo"				<tr>\n";
-	echo"					<td class=\"td-x6-title input-title\" nowrap>工事場所</td>\n";
+	echo"					<td class=\"td-x6-title input-title\" >工事場所</td>\n";
 	echo"					<td class='td-x6' colspan=\"7\">";
     //工事場所
     $attr = array();
@@ -2070,8 +2285,8 @@ echo "</td>";
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x6'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_6"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_6"], $attr, $js, true);
     echo "</span>";
 //	$attr = array();
 //	$attr["name"] = "x_1";
@@ -2086,8 +2301,8 @@ echo "</td>";
 	echo"				</tr>\n";
 
 //	echo"				<tr>\n";
-//	echo"					<td class=\"input-title\" nowrap>受注者</td>\n";
-//	echo"					<td colspan=\"6\" class=\"r\" nowrap>";
+//	echo"					<td class=\"input-title\" >受注者</td>\n";
+//	echo"					<td colspan=\"6\" class=\"r\" >";
 //	$attr = array();
 //	$attr["id"] = "x_3";
 //	$attr["name"] = "x_3";
@@ -2100,8 +2315,8 @@ echo "</td>";
 //	echo"				</tr>\n";
 
 //	echo"				<tr>\n";
-//	echo"					<td class=\"input-title\" nowrap>工事場所</td>\n";
-//	echo"					<td colspan=\"6\" class=\"r\" nowrap>";
+//	echo"					<td class=\"input-title\" >工事場所</td>\n";
+//	echo"					<td colspan=\"6\" class=\"r\" >";
 //	$attr = array();
 //	$attr["id"] = "x_4";
 //	$attr["name"] = "x_4";
@@ -2114,16 +2329,16 @@ echo "</td>";
 //	echo"				</tr>\n";
 
 	echo"				<tr>\n";
-	echo"					<td class=\"input-title\" rowspan=\"2\" nowrap>工期</td>\n";
+	echo"					<td class=\"input-title\" rowspan=\"2\" >工　　期</td>\n";
 	echo"					<td id=\"text_sKoki\">自</td>\n";
-	echo"					<td id=\"date_sKoki\" colspan=\"6\" class=\"td-x11 r\" nowrap>\n";
+	echo"					<td id=\"date_sKoki\" colspan=\"6\" class=\"td-x11 r\" >\n";
 	echo"						";
 	// 工期-開始日
     echo "<span class='x11'>";
 	$dateOutFlg = ($infoEA["x_11"]
 		 || (!$infoEA["x_11"] && ($x_11['wyear'] != "")
 			 && ($x_11['mon'] != "") && ($x_11['mday'] != "")));
-    $dateOutFlg = TRUE; //TESTTTTT
+//    $dateOutFlg = TRUE; //TESTTTTT
 	if ($dateOutFlg)	echo $x_11['nengo'];			// 元号
 	$attr = array();
 	$attr["id"] = "x_11_1";
@@ -2156,16 +2371,16 @@ echo "</td>";
 	echo "</span>";
 	
 	// 年月日入力
-echo "<span class='x13'>(工事着手日: ";
+echo "<span class='x13'>（工事着手日　：　";
     $dateOutFlg = ($infoEA["x_13"]
-        || (!$infoEA["x_13"] && ($x_13_date['wyear'] != "")
-            && ($x_13_date['mon'] != "") && ($x_13_date['mday'] != "")));
-    $dateOutFlg = TRUE; //TESTTTTT
-    if ($dateOutFlg)	echo $x_13_date['nengo'];			// 元号
+        || (!$infoEA["x_13"] && ($x_13['wyear'] != "")
+            && ($x_13['mon'] != "") && ($x_13['mday'] != "")));
+//    $dateOutFlg = TRUE; //TESTTTTT
+    if ($dateOutFlg)	echo $x_13['nengo'];			// 元号
     $attr = array();
     $attr["id"] = "x_13_1";
     $attr["name"] = "x_13_1";
-    $attr["value"] = $x_13_date['wyear'];
+    $attr["value"] = $x_13['wyear'];
     $attr["maxlength"] = "2";
     $attr["class"] = "textfield input-date";
     $js = " onKeyPress=\"go_next_field('x_13_2', event);\"";
@@ -2174,7 +2389,7 @@ echo "<span class='x13'>(工事着手日: ";
     $attr = array();
     $attr["id"] = "x_13_2";
     $attr["name"] = "x_13_2";
-    $attr["value"] = $x_13_date['mon'];
+    $attr["value"] = $x_13['mon'];
     $attr["maxlength"] = "2";
     $attr["class"] = "textfield input-date";
     $js = " onKeyPress=\"go_next_field('x_13_3', event);\"";
@@ -2183,14 +2398,14 @@ echo "<span class='x13'>(工事着手日: ";
     $attr = array();
     $attr["id"] = "x_13_3";
     $attr["name"] = "x_13_3";
-    $attr["value"] = $x_13_date['mday'];
+    $attr["value"] = $x_13['mday'];
     $attr["maxlength"] = "2";
     $attr["class"] = "textfield input-date";
     $js = "";
     echo getInputTextItem($infoEA["x_13"], $attr, $js, true);	// 日
     if ($dateOutFlg)	echo "日\n";
     else	echo("&nbsp;\n");
-	echo ")</span>";
+	echo "　　　　）</span>";
 	
 	
 	echo"					</td>\n";
@@ -2198,13 +2413,13 @@ echo "<span class='x13'>(工事着手日: ";
 
 	echo"				<tr>\n";
 	echo"					<td id=\"text_eKoki\">至</td>\n";
-	echo"					<td id=\"date_eKoki\" colspan=\"6\" class=\"td-x12 r\" nowrap>\n";
+	echo"					<td id=\"date_eKoki\" colspan=\"6\" class=\"td-x12 r\" >\n";
 	echo"						";
 	//工期-終了日
 	$dateOutFlg = ($infoEA["x_12"]
 		 || (!$infoEA["x_12"] && ($x_12['wyear'] != "")
 			 && ($x_12['mon'] != "") && ($x_12['mday'] != "")));
-$dateOutFlg = TRUE; //TESTTTT
+//$dateOutFlg = TRUE; //TESTTTT
 	if ($dateOutFlg)	echo $x_12['nengo'];				// 元号
 	$attr = array();
 	$attr["id"] = "x_12_1";
@@ -2240,7 +2455,7 @@ $dateOutFlg = TRUE; //TESTTTT
 
 
     echo"				<tr>\n";
-    echo"					<td class=\"td-x14-title input-title\" nowrap colspan='2'>監理事務所名</td>\n";
+    echo"					<td class=\"td-x14-title input-title\"  colspan='2'>監理事務所名</td>\n";
     echo"					<td class='td-x14' colspan=\"7\">";
     //工事場所
     $attr = array();
@@ -2252,8 +2467,8 @@ $dateOutFlg = TRUE; //TESTTTT
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x14'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_14"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_14"], $attr, $js, true);
     echo "</span>";
     //	$attr = array();
     //	$attr["name"] = "x_1";
@@ -2268,9 +2483,9 @@ $dateOutFlg = TRUE; //TESTTTT
     echo"				</tr>\n";
 
     echo"				<tr>\n";
-    echo '<td class="td-x15-title input-title" nowrap="" colspan="2">建  築</td>';
-    echo '<td class="td-x15-title input-title" nowrap="">立  会  人</td>';
-    echo"					<td  class='td-x15' nowrap colspan='4'>";
+    echo '<td class="td-x15-title input-title"  colspan="2">建  築</td>';
+    echo '<td class="td-x15-title input-title" >立  会  人</td>';
+    echo"					<td  class='td-x15'  colspan='4'>";
     // 建築立会人
     $attr = array();
     $attr["id"] = "x_15";
@@ -2281,19 +2496,19 @@ $dateOutFlg = TRUE; //TESTTTT
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x15'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_15"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_15"], $attr, $js, true);
     echo "</span>";
     echo "</td>";
 
-    echo '<td class="td-x15-empty" nowrap="" colspan="2"></td>';
+    echo '<td class="td-x15-empty"  colspan="2"></td>';
     
     echo"					</tr>";
 
     echo"				<tr>\n";
-    echo '<td class="td-x16-title input-title" nowrap="" colspan="2">建  築</td>';
-    echo '<td class="td-x16-title input-title" nowrap="">立  会  人</td>';
-    echo"					<td  class='td-x16' nowrap colspan='4'>";
+    echo '<td class="td-x16-title input-title"  colspan="2">建  築</td>';
+    echo '<td class="td-x16-title input-title" >立  会  人</td>';
+    echo"					<td  class='td-x16'  colspan='4'>";
     // 建築立会人
     $attr = array();
     $attr["id"] = "x_16";
@@ -2304,19 +2519,19 @@ $dateOutFlg = TRUE; //TESTTTT
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x16'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_16"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_16"], $attr, $js, true);
     echo "</span>";
     echo "</td>";
     
-    echo '<td class="td-x16-empty" nowrap="" colspan="2"></td>';
+    echo '<td class="td-x16-empty"  colspan="2"></td>';
     
     echo"					</tr>";
 
     echo"				<tr>\n";
-    echo '<td class="td-x17-title input-title" nowrap="" colspan="2">建  築</td>';
-    echo '<td class="td-x17-title input-title" nowrap="">立  会  人</td>';
-    echo"					<td  class='td-x17' nowrap colspan='4'>";
+    echo '<td class="td-x17-title input-title"  colspan="2">建  築</td>';
+    echo '<td class="td-x17-title input-title" >立  会  人</td>';
+    echo"					<td  class='td-x17'  colspan='4'>";
     // 建築立会人
     $attr = array();
     $attr["id"] = "x_17";
@@ -2327,12 +2542,12 @@ $dateOutFlg = TRUE; //TESTTTT
     $attr["class"] = "textfield";
     $js = "";
     echo "<span class='x17'>";
-    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
-    //    echo getInputTextItem($infoEA["x_17"], $attr, $js, true);
+//    echo getInputTextItem(true, $attr, $js, true); // //TESTTTTTTTTT
+        echo getInputTextItem($infoEA["x_17"], $attr, $js, true);
     echo "</span>";
     echo "</td>";
     
-    echo '<td class="td-x17-empty" nowrap="" colspan="2"></td>';
+    echo '<td class="td-x17-empty"  colspan="2"></td>';
     
     echo"					</tr>";
     
@@ -2357,7 +2572,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_1_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示</label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示</label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_2_2",
@@ -2367,7 +2582,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_2_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾</label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾</label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_3_2",
@@ -2377,7 +2592,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_3_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_CONFER], $js, array()) . "協議</label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_CONFER], $js, array()) . "協議</label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_4_2",
@@ -2387,7 +2602,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_4_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出</label>\n";
+			, $n_initiation_type[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出</label>\n";
 
 	$attr = array_merge($propItemComAttr, array(
 		"id" => "initiation_type_5_2",
@@ -2397,7 +2612,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	$js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 	echo"						<label for=\"initiation_type_5_2\">"
 		. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-			, $hatsugijikouChk[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
+			, $n_initiation_type[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
 
 	echo"　事項\n";
 	echo"					</td>\n";
@@ -2420,7 +2635,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	echo"				</tr>\n";
 
 	echo"				<tr>\n";
-	echo"					<td class=\"td-response-title input-title\" colspan=\"8\" nowrap>処理・回答</td>\n";
+	echo"					<td class=\"td-response-title input-title\" colspan=\"8\" >処理・回答</td>\n";
 	echo"				</tr>\n";
 
 	$chkDispCls = " class=\"g_response1\"";
@@ -2428,13 +2643,13 @@ $dateOutFlg = TRUE; //TESTTTT
 	$dTxtDispCls = " class=\"g_response1 editable textfield input-date\"";
 	$taDispCls = " class=\"g_response1 otherta\"";
 	$resCls = "";
-	if ($hatsugisyaChk[ROLE_HACHUSHA] && !$hatsugisyaChk[ROLE_UKEOISHA])	$resCls = "hide";
+//	if ($hatsugisyaChk[ROLE_HACHUSHA] && !$hatsugisyaChk[ROLE_UKEOISHA])	$resCls = "hide";
 	echo"				<tr id=\"respClient\" class=\"" . $resCls . "\">\n";
 	echo"					<td colspan=\"8\" class=\"r\">\n";
 	echo"						<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" summary=\"処理回答\" class=\"noneborder\">\n";
 	echo"							<tr class=\"smallrow\">\n";
-	echo"								<td class=\"nochk\" nowrap>上記事項については、</td>\n";
-    $respHachuFlg = TRUE; //TESTTTTT
+	echo"								<td class=\"nochk\" >上記事項については、</td>\n";
+//    $infoEA[BCODE_RESPONSE_TYPE] = TRUE; //TESTTTTT
 	$resComAttr = array(
 		"name" => "n_response_type",
 	);
@@ -2451,7 +2666,7 @@ $dateOutFlg = TRUE; //TESTTTT
 		$hide["value"] = $inputData["N_SYORI_TYPE"];
 	}
 	echo"								<td class=\"chkfirst\"><label for=\"n_response_type_1\">"
-		. getInputCheckboxItem($respHachuFlg, $attr, $hacchusyasyoriChk[MINUTE_RESPONSE_CONSENT]
+		. getInputCheckboxItem($infoEA[BCODE_RESPONSE_TYPE], $attr, $n_response_type[MINUTE_RESPONSE_CONSENT]
 			, $js, $hide) . "了解</label></td>\n";
 
 	$attr = array_merge(array(
@@ -2460,7 +2675,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	), $resComAttr);
 	$js = $chkDispCls . " onClick=\"onRadioCheckboxClicked(this, 'g_response1')\"";
 	echo"								<td><label for=\"n_response_type_2\">"
-		. getInputCheckboxItem($respHachuFlg, $attr, $hacchusyasyoriChk[MINUTE_RESPONSE_AGREE], $js, array())
+		. getInputCheckboxItem($infoEA[BCODE_RESPONSE_TYPE], $attr, $n_response_type[MINUTE_RESPONSE_AGREE], $js, array())
 		 . "承諾</label></td>\n";
 
 	$attr = array_merge(array(
@@ -2469,7 +2684,7 @@ $dateOutFlg = TRUE; //TESTTTT
 	), $resComAttr);
 	$js = $chkDispCls . " onClick=\"onRadioCheckboxClicked(this, 'g_response1')\"";
 	echo"								<td><label for=\"n_response_type_3\">"
-		. getInputCheckboxItem($respHachuFlg, $attr, $hacchusyasyoriChk[MINUTE_RESPONSE_INSTRUCT], $js, array())
+		. getInputCheckboxItem($infoEA[BCODE_RESPONSE_TYPE], $attr, $n_response_type[MINUTE_RESPONSE_INSTRUCT], $js, array())
 		 . "後日指示</label></td>\n";
 
 	$attr = array_merge(array(
@@ -2478,23 +2693,23 @@ $dateOutFlg = TRUE; //TESTTTT
 	), $resComAttr);
 	$js = $chkDispCls . " onClick=\"onRadioCheckboxClicked(this, 'g_response1')\"";
 	echo"								<td><label for=\"n_response_type_4\">"
-		. getInputCheckboxItem($respHachuFlg, $attr, $hacchusyasyoriChk[MINUTE_RESPONSE_ACCEPT], $js, array())
+		. getInputCheckboxItem($infoEA[BCODE_RESPONSE_TYPE], $attr, $n_response_type[MINUTE_RESPONSE_ACCEPT], $js, array())
 		 . "受理</label></td>\n";
 
-	echo"								<td class=\"nochk\" nowrap>する。協議のとおり施工すること。</td>\n";
+	echo"								<td class=\"nochk\" >する。協議のとおり施工すること。</td>\n";
 	echo"							</tr>\n";
 	echo"							<tr class=\"largerow\">\n";
-	echo"								<td colspan=\"8\" class=\"kakko\">";
+	echo"								<td colspan=\"8\" class=\"td-c-response-type-other-detail kakko\">";
 	$attr = array();
 	$attr["id"] = "c_response_type_other_detail";
 	$attr["name"] = "c_response_type_other_detail";
 	$attr["rows"] = "13";
 	$attr["cols"] = "86";
 	$js = $taDispCls;
-    $respHachuDtFlg = TRUE; //TESTTTTTTTTTTT
-	if (!$respHachuDtFlg)	echo("<div class=\"resp_detail\">");
-	echo getTextAreaItem($respHachuDtFlg, $attr, $hacchusyasyorisonota, $js, true);
-	if (!$respHachuDtFlg)	echo("</div><br>");
+//    $infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL] = TRUE; //TESTTTTTTTTTTT
+	if (!$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL])	echo("<div class=\"resp_detail\">");
+	echo getTextAreaItem($infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL], $attr, $inputData['C_RESPONSE_TYPE_OTHER_DETAIL'], $js, true);
+	if (!$infoEA[BCODE_RESPONSE_TYPE_OTHER_DETAIL])	echo("</div><br>");
 	echo"</td>\n";
 	echo"							</tr>\n";
 	echo"							<tr class=\"smallrow\">\n";
@@ -2502,15 +2717,15 @@ $dateOutFlg = TRUE; //TESTTTT
 // 指示日
 $x_18_input = "<span class='x18'>";
 $dateOutFlg = ($infoEA["x_18"]
-	|| (!$infoEA["x_18"] && ($x_18_date['wyear'] != "")
-		&& ($x_18_date['mon'] != "") && ($x_18_date['mday'] != "")));
-$dateOutFlg = TRUE; //TESTTTTT
-$infoEA["x_18"] = TRUE; //TESTTTTT
-if ($dateOutFlg)	$x_18_input .= $x_18_date['nengo'];			// 元号
+	|| (!$infoEA["x_18"] && ($x_18['wyear'] != "")
+		&& ($x_18['mon'] != "") && ($x_18['mday'] != "")));
+//$dateOutFlg = TRUE; //TESTTTTT
+//$infoEA["x_18"] = TRUE; //TESTTTTT
+if ($dateOutFlg)	$x_18_input .= $x_18['nengo'];			// 元号
 $attr = array();
 $attr["id"] = "x_18_1";
 $attr["name"] = "x_18_1";
-$attr["value"] = $x_18_date['wyear'];
+$attr["value"] = $x_18['wyear'];
 $attr["maxlength"] = "2";
 $attr["class"] = "textfield input-date";
 $js = " onKeyPress=\"go_next_field('x_18_2', event);\"";
@@ -2519,7 +2734,7 @@ if ($dateOutFlg)	$x_18_input .= "年";
 $attr = array();
 $attr["id"] = "x_18_2";
 $attr["name"] = "x_18_2";
-$attr["value"] = $x_18_date['mon'];
+$attr["value"] = $x_18['mon'];
 $attr["maxlength"] = "2";
 $attr["class"] = "textfield input-date";
 $js = " onKeyPress=\"go_next_field('x_18_3', event);\"";
@@ -2528,7 +2743,7 @@ if ($dateOutFlg)	$x_18_input .= "月";
 $attr = array();
 $attr["id"] = "x_18_3";
 $attr["name"] = "x_18_3";
-$attr["value"] = $x_18_date['mday'];
+$attr["value"] = $x_18['mday'];
 $attr["maxlength"] = "2";
 $attr["class"] = "textfield input-date";
 $js = "";
@@ -2539,45 +2754,45 @@ $x_18_input .= "</span>";
 	
 	
 	
-	echo"								<td colspan=\"8\" align=\"left\" nowrap>※協議事項に対して検討時間のかかる場合は、$x_18_input までに指示」するものとする。</td>\n";
+	echo"								<td colspan=\"8\" align=\"left\" >※協議事項に対して検討時間のかかる場合は、$x_18_input までに指示」するものとする。</td>\n";
 	echo"							</tr>\n";
 	echo"							<tr class=\"smallrow\">\n";
 	echo"								<td colspan=\"8\" align=\"right\">\n";
 	echo"									";
-	$dateOutFlg = ($respHachuDateFlg
-		 || (!$respHachuDateFlg && ($hacchusyadate['wyear'] != "")
-			 && ($hacchusyadate['mon'] != "") && ($hacchusyadate['mday'] != "")));
-$dateOutFlg = TRUE; //TESTTTTT
-$respHachuDateFlg = TRUE; //TESTTT
-	if ($dateOutFlg)	echo $hacchusyadate['nengo'];			// 元号
+	$dateOutFlg = ($infoEA[BCODE_RESPONSE_DATE]
+		 || (!$infoEA[BCODE_RESPONSE_DATE] && ($d_response_date['wyear'] != "")
+			 && ($d_response_date['mon'] != "") && ($d_response_date['mday'] != "")));
+//$dateOutFlg = TRUE; //TESTTTTT
+//$infoEA[BCODE_RESPONSE_DATE] = TRUE; //TESTTT
+	if ($dateOutFlg)	echo $d_response_date['nengo'];			// 元号
 	$attr = array();
 	$attr["id"] = PN_REPMINUTE_RESP_DATE . "_1";
 	$attr["name"] = PN_REPMINUTE_RESP_DATE . "_1";
-	$attr["value"] = $hacchusyadate['wyear'];
+	$attr["value"] = $d_response_date['wyear'];
 	$attr["maxlength"] = "2";
 	$js = $dTxtDispCls . " onKeyPress=\"go_next_field('" . PN_REPMINUTE_RESP_DATE . "_2', event);\"";
-	echo getInputTextItem($respHachuDateFlg, $attr, $js, true);	// 年
+	echo getInputTextItem($infoEA[BCODE_RESPONSE_DATE], $attr, $js, true);	// 年
 	if ($dateOutFlg)	echo "年";
 	$attr = array();
 	$attr["id"] = PN_REPMINUTE_RESP_DATE . "_2";
 	$attr["name"] = PN_REPMINUTE_RESP_DATE . "_2";
-	$attr["value"] = $hacchusyadate['mon'];
+	$attr["value"] = $d_response_date['mon'];
 	$attr["maxlength"] = "2";
 	$js = $dTxtDispCls . " onKeyPress=\"go_next_field('" . PN_REPMINUTE_RESP_DATE . "_3', event);\"";
-	echo getInputTextItem($respHachuDateFlg, $attr, $js, true);	// 月
+	echo getInputTextItem($infoEA[BCODE_RESPONSE_DATE], $attr, $js, true);	// 月
 	if ($dateOutFlg)	echo "月";
 	$attr = array();
 	$attr["id"] = PN_REPMINUTE_RESP_DATE . "_3";
 	$attr["name"] = PN_REPMINUTE_RESP_DATE . "_3";
-	$attr["value"] = $hacchusyadate['mday'];
+	$attr["value"] = $d_response_date['mday'];
 	$attr["maxlength"] = "2";
 	$js = $dTxtDispCls;
-	echo getInputTextItem($respHachuDateFlg, $attr, $js, true);	// 日
+	echo getInputTextItem($infoEA[BCODE_RESPONSE_DATE], $attr, $js, true);	// 日
 	if ($dateOutFlg)	echo "日";
 	if (!$dateOutFlg) {
 		echo "<img src=\"" . $sessionInfo->image_default_dir."spacer.gif". "\""
 			. " alt=\"\" width=\"190\" height=\"1\">";
-	} else if(!$respHachuDateFlg) {
+	} else if(!$infoEA[BCODE_RESPONSE_DATE]) {
 		echo "<img src=\"" . $sessionInfo->image_default_dir."spacer.gif". "\""
 			. " alt=\"\" width=\"80\" height=\"1\">";
 	}
@@ -2599,7 +2814,7 @@ $respHachuDateFlg = TRUE; //TESTTT
 //	echo"					<td colspan=\"8\" class=\"r\">\n";
 //	echo"						<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" summary=\"処理回答\" class=\"noneborder\">\n";
 //	echo"							<tr class=\"smallrow\">\n";
-//	echo"								<td class=\"nochk\" nowrap>上記事項については、</td>\n";
+//	echo"								<td class=\"nochk\" >上記事項については、</td>\n";
 //	$res2ComAttr = array(
 //		"name" => "response_type_2",
 //	);
@@ -2646,7 +2861,7 @@ $respHachuDateFlg = TRUE; //TESTTT
 //		 . getInputCheckboxItem($respUkeoiFlg, $attr, $ukeoisyoriChk[MINUTE_RESPONSE_ACCEPT], $js, array())
 //		 . "受理</label></td>\n";
 //
-//	echo"								<td class=\"nochk\" nowrap colspan='4'>する。協議のとおり施工すること。</td>\n";
+//	echo"								<td class=\"nochk\"  colspan='4'>する。協議のとおり施工すること。</td>\n";
 //	echo"							</tr>\n";
 //	echo"							<tr class=\"largerow\">\n";
 //	echo"								<td colspan=\"6\" class=\"kakko\">";
@@ -2665,7 +2880,7 @@ $respHachuDateFlg = TRUE; //TESTTT
 //
 //
 //
-//	echo"								<td colspan=\"8\" align=\"left\" nowrap>※協議事項に対して検討時間のかかる場合は、[] までに指示」するものとする。</td>\n";
+//	echo"								<td colspan=\"8\" align=\"left\" >※協議事項に対して検討時間のかかる場合は、[] までに指示」するものとする。</td>\n";
 //	echo"							</tr>\n";
 //	echo"							<tr class=\"smallrow\">\n";
 ////	echo"								<td colspan=\"8\" align=\"right\">\n";
@@ -2716,8 +2931,8 @@ $respHachuDateFlg = TRUE; //TESTTT
 
 	echo"			<table id=\"comments\">\n";
 	echo"				<tr>\n";
-	echo"					<td>（注）</td>\n";
-	echo"					<td>２部作成し、捺印後発注者と請負者が各１部保管するものとする。</td>\n";
+	echo"					<td><span class='text-fixed'> （注）</span></td>\n";
+	echo"					<td>２部作成し、捺印後発注者と受注者が各１部保管するものとする。</td>\n";
 	echo"				</tr>\n";
 	echo"				<tr>\n";
 	echo"					<td>&nbsp;</td>\n";
@@ -2728,7 +2943,7 @@ $respHachuDateFlg = TRUE; //TESTTT
 echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_PROP_TYPE . "\" value=\"" . ROLE_UKEOISHA . "\">\n";
 echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_PROP_DATE . "\" value=\"" . htmlspecialchars($hatsugidate['value'], ENT_QUOTES) . "\">\n";
 echo "			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_CAT . "\" value=\"" . ROLE_HACHUSHA . "\">\n";
-echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_DATE . "\" value=\"" . htmlspecialchars($hacchusyadate['value'], ENT_QUOTES) . "\">\n";
+echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_DATE . "\" value=\"" . htmlspecialchars($d_response_date['value'], ENT_QUOTES) . "\">\n";
 echo "			<input type=\"hidden\" name=\"can_be_union\" value=\"" . $canBeUnion . "\">";
 //	echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_CAT . "\" value=\"" . htmlspecialchars($inputData["N_RESPONSE_CATEGORY"], ENT_QUOTES) . "\">\n";
 //	echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESPONDENT . "\" value=\"" . htmlspecialchars($inputData["C_RESPONDENT"], ENT_QUOTES) . "\">\n";
@@ -2752,13 +2967,13 @@ echo "			<input type=\"hidden\" name=\"can_be_union\" value=\"" . $canBeUnion . 
     echo"			<input type=\"hidden\" name=\"x_12" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_12_id . "\">\n";
     echo"			<input type=\"hidden\" name=\"x_12\" value=\"" . htmlspecialchars($x_12['value'], ENT_QUOTES) . "\">\n";
     echo"			<input type=\"hidden\" name=\"x_13" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_13_id . "\">\n";
-    echo"			<input type=\"hidden\" name=\"x_13\" value=\"" . htmlspecialchars($x_13_date['value'], ENT_QUOTES) . "\">\n";
+    echo"			<input type=\"hidden\" name=\"x_13\" value=\"" . htmlspecialchars($x_13['value'], ENT_QUOTES) . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_14" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_14_id . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_15" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_15_id . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_16" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_16_id . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_17" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_17_id . "\">\n";
 echo"			<input type=\"hidden\" name=\"x_18" . PN_REPORT_INPUT_ID_POSTFIX . "\" value=\"" . $x_18_id . "\">\n";
-echo"			<input type=\"hidden\" name=\"x_18\" value=\"" . htmlspecialchars($x_18_date['value'], ENT_QUOTES) . "\">\n";
+echo"			<input type=\"hidden\" name=\"x_18\" value=\"" . htmlspecialchars($x_18['value'], ENT_QUOTES) . "\">\n";
 
 //	echo"			<input type=\"hidden\" name=\"c_response_type_other_detail\" value=\"\">\n";
 //	echo"			<input type=\"hidden\" name=\"response_type_other_detail_2\" value=\"\">\n";
@@ -2791,13 +3006,15 @@ if (!$jsNoneFlg) {
 		echo"			<input type=\"hidden\" name=\"n_response_type_2\" value=\"\">\n";
 		echo"			<input type=\"hidden\" name=\"n_response_type_3\" value=\"\">\n";
 		echo"			<input type=\"hidden\" name=\"n_response_type_4\" value=\"\">\n";
-		echo"			<input type=\"hidden\" name=\"c_c_response_type_other_detail\" value=\"\">\n";
+		echo"			<input type=\"hidden\" name=\"c_response_type_other_detail\" value=\"\">\n";
 		echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_DATE . "\" value=\"\">\n";
+		echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_DATE . "_2\" value=\"\">\n";
 //		echo"			<input type=\"hidden\" name=\"n_response_type_2_1\" value=\"\">\n";
 //		echo"			<input type=\"hidden\" name=\"n_response_type_2_2\" value=\"\">\n";
 //		echo"			<input type=\"hidden\" name=\"n_response_type_2_3\" value=\"\">\n";
 //		echo"			<input type=\"hidden\" name=\"n_response_type_2_4\" value=\"\">\n";
-		echo"			<input type=\"hidden\" name=\"c_response_type_other_detail\" value=\"\">\n";
+		echo"			<input type=\"hidden\" name=\"c_response_type_other_detail_1\" value=\"\">\n";
+		echo"			<input type=\"hidden\" name=\"c_response_type_other_detail_2\" value=\"\">\n";
 //		echo"			<input type=\"hidden\" name=\"" . PN_REPMINUTE_RESP_DATE . "_2\" value=\"\">\n";
 
 		echo"			<input type=\"hidden\" name=\"x_1\" value=\"\">\n";
