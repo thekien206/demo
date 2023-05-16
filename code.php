@@ -18,15 +18,6 @@ $n_initiation_type = array(MINUTE_INITTYPE_INSTRUCT => false, MINUTE_INITTYPE_AG
 $n_response_type = array(MINUTE_RESPONSE_CONSENT => false, MINUTE_RESPONSE_AGREE => false
 , MINUTE_RESPONSE_INSTRUCT => false, MINUTE_RESPONSE_ACCEPT => false);
 
-// 起案画面表示時のデータ取得
-if (($act_code == AC_SHOW_START_CIRCULAR) && !$rcExec && !$befMkFlg) {
-	$inputData["N_PROPONENT_TYPE"] = $loginRole["N_PROPONENT_TYPE"];
-	if (($inputData["N_PROPONENT_TYPE"] != ROLE_UKEOISHA)
-		&& ($inputData["N_PROPONENT_TYPE"] != ROLE_HACHUSHA)) {
-		$inputData["N_PROPONENT_TYPE"] = ROLE_UKEOISHA;
-	}
-}
-
 if ($infoEA['x_18']) {
 	$infoEA[BCODE_RESPONSE_DATE] = false;
 	$infoEA[BCODE_RESPONSE_TYPE] = false;
@@ -470,6 +461,7 @@ $d_response_date = CMainFuncCtrl::circularDateSet(
         border-bottom: none;
         text-align: center;
         font-size: x-large;
+        padding: 20px 0;
     }
 
     table td .labelr {
@@ -675,6 +667,56 @@ $d_response_date = CMainFuncCtrl::circularDateSet(
         width: 65px;
     }
 
+    .embSignArea th.sign div {
+        width: 75px !important;
+    }
+
+    #date_sKoki {
+        border-right: 1px solid #919191;
+    }
+    
+    .td-propose-date {
+        width: 300px;
+    }
+    
+    .td-x5-x1-title, .td-propose-date-title {
+        width: 50px !important;
+    }
+
+    .td-x1 {
+        width: 400px;
+    }
+
+    .response-text {
+        font-size: 16px;
+        display: inline-block;
+        margin-left: 25px;
+        border: 1px solid black;
+        padding: 5px 15px;
+    }
+
+    table td.r label:last-child {
+        margin-right: 0;
+    }
+
+    td.r#row_propType label {
+        margin-right: 0;
+        /* margin-right: 2em; */
+    }
+
+    .checkbox-dot {
+        margin-left: 15px;
+        margin-right: 10px;
+    }
+
+    .firm-name-text {
+        margin-left: -16px;
+    }
+
+    .td-x15-title-first, .td-x16-title-first, .td-x17-title-first {
+        text-align: right !important;
+        padding-right: 15px !important;
+    }
     -->
 </style>
 <?php
@@ -1412,7 +1454,7 @@ if (!$jsNoneFlg) {
             var class_name = el.className;
             if (class_name && class_name.indexOf('initiation_type') > -1) {
                 $('input[name^=n_initiation_type]').not('.' + class_name).prop('checked', false);
-                $('.' + class_name).prop('checked', el.checked);
+                $('.' + class_name).prop('checked', el.checked).trigger('click');
             }
             var p = new RegExp("(^|\\s)" + clsName + "(\\s|$)");
             var chks = document.getElementsByTagName("input");
@@ -1484,10 +1526,7 @@ if (!$jsNoneFlg) {
 
 echo "			<table class=\"func-tbl\" summary=\"指示・承諾・協議・提出・報告書\" id=\"uchiawasenaiyo1\">\n";
 echo "				<tr>\n";
-echo "					<td colspan=\"8\" class=\"formno\">第１２号様式</td>\n";
-echo "				</tr>\n";
-echo "				<tr>\n";
-echo "					<td colspan=\"8\" class=\"formname\">";
+echo "					<td colspan=\"11\" class=\"formname\">";
 //					指示・承諾・協議・提出・報告書
 //発議事項の共通属性
 $propItemComAttr = array(
@@ -1548,14 +1587,17 @@ echo "						<label for=\"initiation_type_5\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
 		, $n_initiation_type[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
 
-echo "　事\n";
+echo "　書\n";
+
+echo "<span class='response-text'>ワンデーレスポンス<br>対象工事</span>";
+
 echo "					</td>\n";
 echo "				</tr>\n";
 
 // 可変押印出力
 $signsInfo_pdf = $signsInfo;
 echo "				<tr>\n";
-echo "					<td class=\"embSignArea\" colspan=\"8\">\n";
+echo "					<td class=\"embSignArea\" colspan=\"11\">\n";
 echo "						<div class=\"signArea\">\n";
 echoSignTable($signsInfo, $loginUser, $peExec, "", false, "", $canBeUnion);
 echo "						</div>\n";
@@ -1563,7 +1605,7 @@ echo "					</td>\n";
 echo "				</tr>\n";
 
 echo "				<tr>\n";
-echo "					<td class='td-x2-x7' colspan=\"3\" >\n";
+echo "					<td class='td-x2-x7' colspan=\"4\" >\n";
 echo "<div class='x2'>";
 $attr = array();
 $attr["id"] = "x_2";
@@ -1631,7 +1673,7 @@ else    echo("&nbsp;\n");
 echo "					</td>\n";
 
 echo "					<td class=\"td-x5-x1-title input-title\" >発<br>議<br>者</td>\n";
-echo "					<td class='td-x5-x10'  colspan='2'>\n";
+echo "					<td class='td-x5-x10'  colspan='4'>\n";
 $attr = array();
 $attr["id"] = "x_5";
 $attr["name"] = "x_5";
@@ -1660,7 +1702,7 @@ echo "				</tr>\n";
 
 echo "				<tr>\n";
 echo "					<td class=\"td-x8-title input-title\" >契約番号</td>\n";
-echo "					<td  class='td-x8'  colspan='2'>";
+echo "					<td  class='td-x8'  colspan='3'>";
 // 契約番号
 $attr = array();
 $attr["id"] = "x_8";
@@ -1677,7 +1719,7 @@ if ($comKind == CK_COM_MAKE) echo "<span class='text-addtional'>号</span>";
 echo "</span>";
 echo "</td>";
 echo "					<td class=\"td-x1-title input-title\" >工<br>事<br>名</td>\n";
-echo "					<td  class='td-x1' >";
+echo "					<td  class='td-x1' colspan='3'>";
 //工事名
 $attr = array();
 $attr["name"] = "x_1";
@@ -1708,7 +1750,7 @@ echo "				</tr>\n";
 
 echo "				<tr>\n";
 echo "					<td class=\"td-x6-title input-title\" >工事場所</td>\n";
-echo "					<td class='td-x6' colspan=\"7\">";
+echo "					<td class='td-x6' colspan=\"10\">";
 //工事場所
 $attr = array();
 $attr["id"] = "x_6";
@@ -1728,7 +1770,7 @@ echo "				</tr>\n";
 echo "				<tr>\n";
 echo "					<td class=\"input-title\" rowspan=\"2\" >工　　期</td>\n";
 echo "					<td id=\"text_sKoki\">自</td>\n";
-echo "					<td id=\"date_sKoki\" colspan=\"6\" class=\"td-x11 r\" >\n";
+echo "					<td id=\"date_sKoki\" colspan=\"9\" class=\"td-x11 r\" >\n";
 echo "						";
 // 工期-開始日
 echo "<span class='x11'>";
@@ -1808,7 +1850,7 @@ echo "				</tr>\n";
 
 echo "				<tr>\n";
 echo "					<td id=\"text_eKoki\">至</td>\n";
-echo "					<td id=\"date_eKoki\" colspan=\"6\" class=\"td-x12 r\" >\n";
+echo "					<td id=\"date_eKoki\" colspan=\"10\" class=\"td-x12 r\" >\n";
 echo "						";
 //工期-終了日
 $dateOutFlg = ($infoEA["x_12"]
@@ -1849,8 +1891,8 @@ echo "				</tr>\n";
 
 
 echo "				<tr>\n";
-echo "					<td class=\"td-x14-title input-title\"  colspan='2'>監理事務所名</td>\n";
-echo "					<td class='td-x14' colspan=\"7\">";
+echo "					<td class=\"td-x14-title input-title\"  colspan='2'><span class='firm-name-text'>監理事務所名</span></td>\n";
+echo "					<td class='td-x14' colspan=\"9\">";
 //工事場所
 $attr = array();
 $attr["id"] = "x_14";
@@ -1868,9 +1910,9 @@ echo "</td>\n";
 echo "				</tr>\n";
 
 echo "				<tr>\n";
-echo '<td class="td-x15-title input-title"  colspan="2">建  築</td>';
+echo '<td class="td-x15-title-first input-title"  colspan="2">建  築</td>';
 echo '<td class="td-x15-title input-title" >立  会  人</td>';
-echo "					<td  class='td-x15'  colspan='4'>";
+echo "					<td  class='td-x15'  colspan='7'>";
 // 建築立会人
 $attr = array();
 $attr["id"] = "x_15";
@@ -1890,9 +1932,9 @@ echo '<td class="td-x15-empty"  colspan="2"></td>';
 echo "					</tr>";
 
 echo "				<tr>\n";
-echo '<td class="td-x16-title input-title"  colspan="2">建  築</td>';
+echo '<td class="td-x16-title-first input-title"  colspan="2">電  気</td>';
 echo '<td class="td-x16-title input-title" >立  会  人</td>';
-echo "					<td  class='td-x16'  colspan='4'>";
+echo "					<td  class='td-x16'  colspan='7'>";
 // 建築立会人
 $attr = array();
 $attr["id"] = "x_16";
@@ -1912,9 +1954,9 @@ echo '<td class="td-x16-empty"  colspan="2"></td>';
 echo "					</tr>";
 
 echo "				<tr>\n";
-echo '<td class="td-x17-title input-title"  colspan="2">建  築</td>';
+echo '<td class="td-x17-title-first input-title"  colspan="2">機  会</td>';
 echo '<td class="td-x17-title input-title" >立  会  人</td>';
-echo "					<td  class='td-x17'  colspan='4'>";
+echo "					<td  class='td-x17'  colspan='7'>";
 // 建築立会人
 $attr = array();
 $attr["id"] = "x_17";
@@ -1935,7 +1977,7 @@ echo "					</tr>";
 
 
 echo "				<tr>\n";
-echo "					<td id=\"row_propType\" colspan=\"8\" class=\"r\">\n";
+echo "					<td id=\"row_propType\" colspan=\"11\" class=\"r\">\n";
 //発議事項の共通属性
 $n_initiation_type_2 = PN_REPMINUTE_INIT_TYPE . '_2';
 $propItemComAttr = array(
@@ -1954,7 +1996,7 @@ $hide["value"] = $inputData["N_INITIATION_TYPE"];
 $js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 echo "						<label for=\"initiation_type_1_2\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-		, $n_initiation_type[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示</label>\n";
+		, $n_initiation_type[MINUTE_INITTYPE_INSTRUCT], $js, $hide) . "指示<span class='checkbox-dot'>・</span></label>\n";
 
 $attr = array_merge($propItemComAttr, array(
 	"id" => "initiation_type_2_2",
@@ -1964,7 +2006,7 @@ $attr = array_merge($propItemComAttr, array(
 $js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 echo "						<label for=\"initiation_type_2_2\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-		, $n_initiation_type[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾</label>\n";
+		, $n_initiation_type[MINUTE_INITTYPE_AGREE], $js, array()) . "承諾<span class='checkbox-dot'>・</span></label>\n";
 
 $attr = array_merge($propItemComAttr, array(
 	"id" => "initiation_type_3_2",
@@ -1974,7 +2016,7 @@ $attr = array_merge($propItemComAttr, array(
 $js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 echo "						<label for=\"initiation_type_3_2\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-		, $n_initiation_type[MINUTE_INITTYPE_CONFER], $js, array()) . "協議</label>\n";
+		, $n_initiation_type[MINUTE_INITTYPE_CONFER], $js, array()) . "協議<span class='checkbox-dot'>・</span></label>\n";
 
 $attr = array_merge($propItemComAttr, array(
 	"id" => "initiation_type_4_2",
@@ -1984,7 +2026,7 @@ $attr = array_merge($propItemComAttr, array(
 $js = " onClick=\"onRadioCheckboxClicked(this, 'g_prop_items')\"";
 echo "						<label for=\"initiation_type_4_2\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
-		, $n_initiation_type[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出</label>\n";
+		, $n_initiation_type[MINUTE_INITTYPE_PRESENT], $js, array()) . "提出<span class='checkbox-dot'>・</span></label>\n";
 
 $attr = array_merge($propItemComAttr, array(
 	"id" => "initiation_type_5_2",
@@ -1996,12 +2038,12 @@ echo "						<label for=\"initiation_type_5_2\">"
 	. getInputCheckboxItem($infoEA[BCODE_INITIATION_TYPE], $attr
 		, $n_initiation_type[MINUTE_INITTYPE_REPORT], $js, array()) . "報告</label>";
 
-echo "　事項\n";
+echo "事項\n";
 echo "					</td>\n";
 echo "				</tr>\n";
 
 echo "				<tr>\n";
-echo "					<td colspan=\"8\" class=\"td-minutes_detail minutes_detail\">\n";
+echo "					<td colspan=\"11\" class=\"td-minutes_detail minutes_detail\">\n";
 $attr = array();
 $attr["name"] = PN_REPMINUTE_DETAIL;
 $attr["id"] = "minutes_detail";
@@ -2017,7 +2059,7 @@ echo "					</td>\n";
 echo "				</tr>\n";
 
 echo "				<tr>\n";
-echo "					<td class=\"td-response-title input-title\" colspan=\"8\" >処  理  ・  回  答</td>\n";
+echo "					<td class=\"td-response-title input-title\" colspan=\"11\" >処  理  ・  回  答</td>\n";
 echo "				</tr>\n";
 
 $chkDispCls = " class=\"g_response1\"";
@@ -2026,7 +2068,7 @@ $dTxtDispCls = " class=\"g_response1 editable textfield input-date\"";
 $taDispCls = " class=\"g_response1 otherta\"";
 $resCls = "";
 echo "				<tr id=\"respClient\" class=\"" . $resCls . "\">\n";
-echo "					<td colspan=\"8\" class=\"r\">\n";
+echo "					<td colspan=\"11\" class=\"r\">\n";
 echo "						<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" summary=\"処理回答\" class=\"noneborder\">\n";
 echo "							<tr class=\"smallrow\">\n";
 echo "								<td class=\"nochk\" >上記事項については、</td>\n";
@@ -2076,10 +2118,10 @@ echo "								<td><label for=\"n_response_type_4\">"
 	. getInputCheckboxItem($infoEA[BCODE_RESPONSE_TYPE], $attr, $n_response_type[MINUTE_RESPONSE_ACCEPT], $js, array())
 	. "受理</label></td>\n";
 
-echo "								<td class=\"nochk\" >する。協議のとおり施工すること。</td>\n";
+echo "								<td class=\"nochk\" >する。協議のとおり施工する。</td>\n";
 echo "							</tr>\n";
 echo "							<tr class=\"largerow\">\n";
-echo "								<td colspan=\"8\" class=\"td-c-response-type-other-detail kakko\">";
+echo "								<td colspan=\"11\" class=\"td-c-response-type-other-detail kakko\">";
 $attr = array();
 $attr["id"] = "c_response_type_other_detail";
 $attr["name"] = "c_response_type_other_detail";
@@ -2130,10 +2172,10 @@ else    $x_18_input .= ("&nbsp;\n");
 $x_18_input .= "</span>";
 
 
-echo "								<td colspan=\"8\" align=\"left\" >※協議事項に対して検討時間のかかる場合は、$x_18_input までに指示」するものとする。</td>\n";
+echo "								<td colspan=\"11\" align=\"left\" >※協議事項に対して検討時間のかかる場合は、「$x_18_input までに指示」するものとする。</td>\n";
 echo "							</tr>\n";
 echo "							<tr class=\"smallrow\">\n";
-echo "								<td colspan=\"8\" align=\"right\">\n";
+echo "								<td colspan=\"11\" align=\"right\">\n";
 echo "									";
 $dateOutFlg = ($infoEA[BCODE_RESPONSE_DATE]
 	|| (!$infoEA[BCODE_RESPONSE_DATE] && ($d_response_date['wyear'] != "")
